@@ -1,0 +1,17 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Link {
+  id      Int      @id @default(autoincrement())
+  url     String?  @db.VarChar(1000)
+  code    String?  @unique @db.VarChar(20)
+  created DateTime @default(now()) @map("created")
+
+  @@map("link")
+}
