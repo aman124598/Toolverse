@@ -13,7 +13,8 @@ export const metadata: Metadata = {
     default: "Toolverse - Free Online Tools",
     template: "%s | Toolverse",
   },
-  description: "123+ free online tools for PDFs, calculations, text formatting, and more. No signup required. No limits.",
+  description:
+    "123+ free online tools for PDFs, calculations, text formatting, and more. No signup required. No limits.",
   keywords: [
     "free online tools",
     "pdf tools",
@@ -29,19 +30,23 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     title: "Toolverse - Free Online Tools",
-    description: "123+ free online tools for PDFs, calculations, text formatting, and more.",
+    description:
+      "123+ free online tools for PDFs, calculations, text formatting, and more.",
     siteName: "Toolverse",
   },
   twitter: {
     card: "summary_large_image",
     title: "Toolverse - Free Online Tools",
-    description: "123+ free online tools for PDFs, calculations, text formatting, and more.",
+    description:
+      "123+ free online tools for PDFs, calculations, text formatting, and more.",
   },
   robots: {
     index: true,
     follow: true,
   },
 };
+
+import { Analytics } from "@vercel/analytics/react";
 
 export default function RootLayout({
   children,
@@ -52,6 +57,7 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased">
         {children}
+        <Analytics />
       </body>
     </html>
   );
