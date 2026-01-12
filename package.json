@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generate-tools": "tsx scripts/generate-all-tools.ts"
+    "generate-tools": "tsx scripts/generate-all-tools.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
