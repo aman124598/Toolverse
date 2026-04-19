@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       try {
         const buffer = Buffer.from(arrayBuffer);
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const pdfParse = require('pdf-parse/lib/pdf-parse');
+        const pdfParse = require('pdf-parse');
 
         // Configure extraction options
         const parseOptions: Record<string, unknown> = {};

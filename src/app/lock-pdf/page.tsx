@@ -260,7 +260,6 @@ export default function LockPdfPage() {
                  onClick={lockPdf}
                  disabled={!password || !confirmPassword || password !== confirmPassword}
                  icon={Icons.lock}
-                 variant="destructive"
                >
                  Lock PDF Now
                </StitchButton>
