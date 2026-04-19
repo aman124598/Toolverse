@@ -1,45 +1,233 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import ToolLayout, { Icons } from '@/components/ToolLayout';
+import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
 
 export default function FlattenPdfPage() {
-  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [flattening, setFlattening] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [result, setResult] = useState<boolean>(false);
+
+  const handleFileDrop = useCallback((e: React.DragEvent) => {
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile?.type === 'application/pdf') {
+      setFile(droppedFile);
+      setError(null);
+      setResult(false);
+    } else {
+      setError('Please drop a PDF file');
+    }
+  }, []);
+
+  const flattenPdf = async () => {
+    if (!file) return;
+
+    setFlattening(true);
+    setProgress(10);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      setProgress(40);
+
+      const response = await fetch('/api/pdf-flatten', {
+        method: 'POST',
+        body: formData,
+      });
+
+      setProgress(70);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to flatten PDF');
+      }
+
+      const blob = await response.blob();
+      
+      setProgress(90);
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flattened_${file.name}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setProgress(100);
+      setResult(true);
+
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'Failed to flatten PDF');
+    } finally {
+      setFlattening(false);
+    }
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(2) + ' MB';
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-12 max-w-6xl">
-        {/* Hero Section */}
-        <div className="text-center mb-12 space-y-4">
-          <div className="inline-block">
-            <span className="text-6xl mb-4 inline-block animate-bounce">📄</span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-            Flatten Pdf
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Free online flatten pdf tool - fast, secure, and easy to use
-          </p>
+    <ToolLayout 
+      title="Flatten PDF" 
+      description="Merge form fields, layers, and annotations into a single static layer"
+      icon={
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+        </svg>
+      }
+      gradient="from-indigo-500 to-blue-500"
+    >
+      {!file ? (
+        <div className="space-y-6">
+          <StitchDropzone
+             onDrop={handleFileDrop}
+             onChange={(e) => {
+               if (e.target.files?.[0]) {
+                 setFile(e.target.files[0]);
+                 setResult(false);
+                 setError(null);
+               }
+             }}
+             accept=".pdf,application/pdf"
+             title="Drop your PDF here"
+             subtitle="to merge all layers"
+          />
+          <StitchContainer className="bg-gradient-to-br from-indigo-500/5 to-blue-500/5 border-indigo-500/20 max-w-2xl mx-auto">
+             <h4 className="font-semibold text-indigo-400 mb-3 text-sm flex items-center gap-2">
+                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                 What does flattening do?
+             </h4>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-300">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                  Merges form fields into static content
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                  Combines annotations with the page
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                  Flattens transparency and layers
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                  Creates a simpler, more compatible PDF
+                </div>
+             </div>
+          </StitchContainer>
         </div>
+      ) : (
+        <div className="space-y-6">
+          {/* File Info */}
+          <StitchContainer noPadding>
+             <div className="flex items-center gap-4 p-5">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-white">{file.name}</p>
+                  <p className="text-sm text-gray-400 mt-1">{formatSize(file.size)}</p>
+                </div>
+                <button 
+                  onClick={() => { setFile(null); setResult(false); }} 
+                  className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+                  disabled={flattening}
+                >
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+             </div>
+          </StitchContainer>
 
-        {/* Tool Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700">
-          <div className="text-center text-gray-600 dark:text-gray-400">
-            <p className="text-lg mb-4">🚀 Tool functionality coming soon!</p>
-            <p className="text-sm">This tool is being migrated from PHP to Next.js.</p>
-          </div>
-        </div>
+          {/* Progress */}
+          {flattening && (
+             <StitchContainer>
+               <div className="flex items-center gap-4 mb-4">
+                 <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                   <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                 </div>
+                 <div>
+                   <p className="font-medium text-white">Flattening Layers...</p>
+                   <p className="text-sm text-gray-400">{progress}% complete</p>
+                 </div>
+               </div>
+               <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                 <div 
+                   className="h-full bg-[linear-gradient(90deg,var(--tw-gradient-stops))] from-indigo-500 via-blue-500 to-indigo-500 bg-[length:200%_100%] animate-shimmer transition-all duration-500" 
+                   style={{ width: `${progress}%` }} 
+                 />
+               </div>
+             </StitchContainer>
+          )}
 
-        {/* Info Section */}
-        <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
-          <h2 className="font-semibold text-lg text-blue-900 dark:text-blue-100 mb-2">How to use Flatten Pdf:</h2>
-          <ol className="list-decimal list-inside space-y-2 text-blue-800 dark:text-blue-200">
-            <li>Upload or input your data</li>
-            <li>Configure options if available</li>
-            <li>Click process/convert</li>
-            <li>Download or copy the result</li>
-          </ol>
+          {/* Result */}
+          {result && (
+            <div className="space-y-4">
+              <StitchContainer className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20">
+                 <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-emerald-400 text-xl">PDF Flattened Successfully!</h3>
+                      <p className="text-sm text-gray-400">All interactive elements have been merged</p>
+                    </div>
+                 </div>
+              </StitchContainer>
+
+              <button
+                onClick={() => { setFile(null); setResult(false); }}
+                className="w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-gray-300 font-medium transition-all border border-white/10"
+              >
+                Flatten Another PDF
+              </button>
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
+          <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-red-400 font-medium">{error}</span>
+        </div>
+      )}
+
+      {/* Flatten Button */}
+      {file && !result && !flattening && (
+        <div className="mt-6">
+           <StitchButton 
+             onClick={flattenPdf}
+             icon={
+               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+               </svg>
+             }
+           >
+             Merge & Flatten Layers
+           </StitchButton>
+        </div>
+      )}
+    </ToolLayout>
   );
 }

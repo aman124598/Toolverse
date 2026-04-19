@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useToolStack } from '@/context/ToolStackContext';
 
 interface ToolLayoutProps {
   title: string;
@@ -18,6 +20,31 @@ export default function ToolLayout({
   children,
   gradient = 'from-purple-500 to-pink-500'
 }: ToolLayoutProps) {
+  const pathname = usePathname();
+  const slug = pathname.replace('/', '');
+  const { isInStack, toggleStack } = useToolStack();
+  const stacked = isInStack(slug);
+  const [showReminder, setShowReminder] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!localStorage.getItem('toolverse_stack_reminder_dismissed')) {
+         setShowReminder(true);
+      }
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  const dismissReminder = () => {
+    setShowReminder(false);
+    localStorage.setItem('toolverse_stack_reminder_dismissed', 'true');
+  };
+
+  const handleToggle = () => {
+    toggleStack(slug);
+    dismissReminder();
+  };
+
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
       {/* Gradient Background */}
@@ -27,18 +54,18 @@ export default function ToolLayout({
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-full blur-[100px]" />
       </div>
 
-      {/* Subtle Grid */}
       <div 
-        className="fixed inset-0 opacity-[0.015]"
+        className="fixed inset-0 opacity-[0.2]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+          backgroundSize: '24px 24px'
         }}
       />
 
       {/* Content */}
       <div className="relative z-10">
         {/* Navigation */}
-        <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-black/50 border-b border-white/5">
+        <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-black/60 border-b border-white/5">
           <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <Link href="/" className="font-semibold text-xl tracking-tight hover:text-gray-300 transition-colors">
@@ -58,25 +85,82 @@ export default function ToolLayout({
         </nav>
 
         {/* Tool Header */}
-        <div className="pt-16 pb-12 px-6">
-          <div className="max-w-6xl mx-auto">
+        <div className="pt-16 pb-10 px-6">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-start justify-between gap-6">
             <div className="flex items-start gap-6">
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg shadow-purple-500/20`}>
+              <div className={`w-16 h-16 shrink-0 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.5)] ring-1 ring-white/10`}>
                 {icon}
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">{title}</h1>
-                <p className="text-gray-400 text-lg">{description}</p>
+                <h1 className="text-3xl md:text-5xl font-bold mb-3 tracking-tight">{title}</h1>
+                <p className="text-gray-400 text-lg md:text-xl font-medium">{description}</p>
               </div>
+            </div>
+            
+            {/* Stack Action */}
+            <div className="relative">
+              <button
+                 onClick={handleToggle}
+                 className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-medium transition-all shrink-0 ${
+                   stacked 
+                     ? 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400' 
+                     : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
+                 }`}
+              >
+                 {stacked ? (
+                   <>
+                     <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+                     <span className="hidden sm:inline">In Your Stack</span>
+                     <span className="sm:hidden">Stacked</span>
+                   </>
+                 ) : (
+                   <>
+                     <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+                     <span className="hidden sm:inline">Add to Stack</span>
+                     <span className="sm:hidden">Add</span>
+                   </>
+                 )}
+              </button>
+
+              {showReminder && !stacked && (
+                <div className="absolute top-full mt-4 right-0 z-50 w-72 p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-2xl text-white transform animate-in fade-in slide-in-from-top-2 border border-white/20">
+                  <div className="absolute -top-2 right-6 w-4 h-4 bg-purple-500 rotate-45 border-t border-l border-white/20"></div>
+                  <button 
+                    onClick={dismissReminder} 
+                    className="absolute top-2 right-2 p-1 text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                  <div className="flex gap-3 relative z-10">
+                    <div className="text-2xl mt-1 leading-none">💡</div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1 text-white">Use this tool often?</h4>
+                      <p className="text-xs text-white/90 leading-relaxed mb-3">Add it to your personal stack for instant access anywhere on the platform.</p>
+                      <button 
+                        onClick={handleToggle}
+                        className="text-xs font-semibold bg-white text-purple-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors shadow-sm"
+                      >
+                        Add Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Tool Content */}
+        {/* Tool Content - Stitched Container */}
         <div className="px-6 pb-20">
           <div className="max-w-6xl mx-auto">
-            <div className="bg-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/5 p-8 shadow-2xl shadow-black/50">
-              {children}
+            <div className="relative rounded-[2rem] bg-black/40 backdrop-blur-2xl border border-white/10 p-2 sm:p-3 shadow-2xl overflow-hidden">
+              {/* Outer Glow */}
+              <div className={`absolute -inset-[100px] bg-gradient-to-r ${gradient} opacity-5 blur-[100px] pointer-events-none`} />
+              
+              {/* Inner Stitched Container */}
+              <div className="relative rounded-[1.5rem] border-[1.5px] border-dashed border-white/15 p-6 sm:p-10 bg-black/20">
+                {children}
+              </div>
             </div>
           </div>
         </div>

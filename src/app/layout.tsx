@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import { ToolStackProvider } from "@/context/ToolStackContext";
+import { MyStackDrawer } from "@/components/MyStackDrawer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s | Toolverse",
   },
   description:
-    "123+ free online tools for PDFs, calculations, text formatting, and more. No signup required. No limits.",
+    "70+ free online tools for PDFs, calculations, text formatting, and more. No signup required. No limits.",
   keywords: [
     "free online tools",
     "pdf tools",
@@ -32,14 +34,14 @@ export const metadata: Metadata = {
     locale: "en_US",
     title: "Toolverse - Free Online Tools",
     description:
-      "123+ free online tools for PDFs, calculations, text formatting, and more.",
+      "70+ free online tools for PDFs, calculations, text formatting, and more.",
     siteName: "Toolverse",
   },
   twitter: {
     card: "summary_large_image",
     title: "Toolverse - Free Online Tools",
     description:
-      "123+ free online tools for PDFs, calculations, text formatting, and more.",
+      "70+ free online tools for PDFs, calculations, text formatting, and more.",
   },
   robots: {
     index: true,
@@ -54,8 +56,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="font-sans antialiased">
-        {children}
+      <body className="font-sans antialiased text-white bg-black">
+        <ToolStackProvider>
+          {children}
+          <MyStackDrawer />
+        </ToolStackProvider>
         <Analytics />
       </body>
     </html>

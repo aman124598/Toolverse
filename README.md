@@ -1,12 +1,12 @@
 # Toolverse - Your Universe of Free Online Tools
 
-![Toolverse](https://img.shields.io/badge/Tools-123%2B-purple?style=for-the-badge)
+![Toolverse](https://img.shields.io/badge/Tools-70%2B-purple?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 ![Tech](https://img.shields.io/badge/Built%20With-Next.js%2014-black?style=for-the-badge)
 
 ## 🚀 Overview
 
-**Toolverse** is a comprehensive suite of 123+ free online tools designed to simplify your daily digital tasks. From PDF manipulation and financial calculations to developer utilities and AI-powered generators, Toolverse offers a modern, fast, and privacy-focused experience without the need for signups or subscriptions.
+**Toolverse** is a comprehensive suite of 70+ free online tools designed to simplify your daily digital tasks. From PDF manipulation and financial calculations to developer utilities and AI-powered generators, Toolverse offers a modern, fast, and privacy-focused experience without the need for signups or subscriptions.
 
 ## ✨ Key Features
 

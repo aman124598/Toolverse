@@ -57,11 +57,11 @@ const features = [
 
 // Tool categories for quick access
 const categories = [
-  { name: 'PDF Tools', count: 23, icon: '📄', gradient: 'from-rose-500 to-orange-500' },
-  { name: 'Calculators', count: 15, icon: '🔢', gradient: 'from-emerald-500 to-teal-500' },
+  { name: 'PDF Tools', count: 20, icon: '📄', gradient: 'from-rose-500 to-orange-500' },
+  { name: 'Calculators', count: 8, icon: '🔢', gradient: 'from-emerald-500 to-teal-500' },
   { name: 'Text Tools', count: 6, icon: '📝', gradient: 'from-blue-500 to-cyan-500' },
-  { name: 'Generators', count: 5, icon: '⚡', gradient: 'from-purple-500 to-pink-500' },
-  { name: 'Code Tools', count: 4, icon: '💻', gradient: 'from-indigo-500 to-violet-500' },
+  { name: 'Generators', count: 2, icon: '⚡', gradient: 'from-purple-500 to-pink-500' },
+  { name: 'Code Tools', count: 1, icon: '💻', gradient: 'from-indigo-500 to-violet-500' },
   { name: 'Design Tools', count: 2, icon: '🎨', gradient: 'from-fuchsia-500 to-purple-500' },
 ];
 
@@ -111,7 +111,7 @@ export default function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 mb-8">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-sm text-gray-300">55+ Free Tools • No Sign-up Required</span>
+              <span className="text-sm text-gray-300">40+ Free Tools • No Sign-up Required</span>
             </div>
 
             {/* Title */}
@@ -178,7 +178,7 @@ export default function HomePage() {
                 href="/tools" 
                 className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
               >
-                View all 55+ tools
+                View all 70+ tools
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -197,7 +197,7 @@ export default function HomePage() {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {categories.map((cat) => (
-                <Link key={cat.name} href="/tools">
+                <Link key={cat.name} href={`/tools?category=${encodeURIComponent(cat.name)}`}>
                   <SpotlightCard className="group">
                     <div className="p-6 flex items-center gap-4">
                       <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${cat.gradient} flex items-center justify-center text-2xl group-hover:scale-110 transition-transform`}>
