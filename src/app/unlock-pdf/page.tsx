@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import ToolLayout, { Icons } from '@/components/ToolLayout';
+import ToolLayout from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
-import { PDFDocument } from 'pdf-lib';
 
 export default function UnlockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -40,30 +39,21 @@ export default function UnlockPdfPage() {
     setError(null);
     
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      
-      const pdfDoc = await PDFDocument.load(arrayBuffer, {
-        ignoreEncryption: true,
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('password', password);
+
+      const response = await fetch('/api/pdf-unlock', {
+        method: 'POST',
+        body: formData,
       });
-      
-      const newPdfDoc = await PDFDocument.create();
-      const pages = await newPdfDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
-      pages.forEach(page => newPdfDoc.addPage(page));
-      
-      newPdfDoc.setProducer('Toolverse PDF Unlocker');
-      newPdfDoc.setCreator('Toolverse');
-      
-      const originalTitle = pdfDoc.getTitle();
-      const originalAuthor = pdfDoc.getAuthor();
-      const originalSubject = pdfDoc.getSubject();
-      
-      if (originalTitle) newPdfDoc.setTitle(originalTitle);
-      if (originalAuthor) newPdfDoc.setAuthor(originalAuthor);
-      if (originalSubject) newPdfDoc.setSubject(originalSubject);
-      
-      const unlockedBytes = await newPdfDoc.save();
-      
-      const blob = new Blob([new Uint8Array(unlockedBytes)], { type: 'application/pdf' });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to unlock PDF');
+      }
+
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       
       setResult({ url, fileName: `unlocked_${file.name}` });
@@ -77,11 +67,7 @@ export default function UnlockPdfPage() {
       
     } catch (err) {
       console.error(err);
-      if (password) {
-        setError('Incorrect password. Please try again.');
-      } else {
-        setError('This PDF requires a password to unlock. Please enter the password below.');
-      }
+      setError(err instanceof Error ? err.message : 'Failed to unlock PDF');
     } finally {
       setUnlocking(false);
     }
