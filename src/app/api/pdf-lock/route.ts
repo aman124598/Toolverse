@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument } from 'pdf-lib';
+import { encryptPDF } from 'cryptpdf';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -48,38 +48,13 @@ export async function POST(request: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-
-    // Create a new copy of the PDF
-    const newPdf = await PDFDocument.create();
-    const pages = await newPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-    pages.forEach((page) => newPdf.addPage(page));
-
-    // Copy metadata
-    const title = pdfDoc.getTitle();
-    const author = pdfDoc.getAuthor();
-    const subject = pdfDoc.getSubject();
-    const creator = pdfDoc.getCreator();
-
-    if (title) newPdf.setTitle(title);
-    if (author) newPdf.setAuthor(author);
-    if (subject) newPdf.setSubject(subject);
-    if (creator) newPdf.setCreator(creator);
-
-    newPdf.setSubject(subject || 'Password Protected Document');
-    newPdf.setKeywords(['protected', 'locked']);
-    newPdf.setProducer('Toolverse PDF Locker');
-    newPdf.setCreationDate(new Date());
-    newPdf.setModificationDate(new Date());
-
-    // NOTE: pdf-lib does not support PDF encryption natively.
-    // The PDF is saved as an unencrypted copy with protection metadata.
-    // For true password-based encryption, a native library (muhammara, qpdf) is needed.
-    // This implementation creates a clean copy with metadata indicating protection intent.
-
-    const pdfBytes = await newPdf.save({
-      useObjectStreams: true,
-    });
+    const effectiveUserPassword = userPassword || ownerPassword;
+    const effectiveOwnerPassword = ownerPassword || userPassword;
+    const pdfBytes = await encryptPDF(
+      new Uint8Array(arrayBuffer),
+      effectiveUserPassword,
+      effectiveOwnerPassword,
+    );
 
     // Parse permissions for response
     const permissionList = permissions ? permissions.split(',').map(p => p.trim()) : [];
@@ -88,10 +63,9 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="protected_${file.name}"`,
-        'X-Page-Count': pdfDoc.getPageCount().toString(),
         'X-Protection-Level': ownerPassword ? 'owner+user' : 'user',
         'X-Permissions': permissionList.join(',') || 'none',
-        'X-Note': 'PDF encryption requires native libraries. This creates a clean copy with protection metadata. For full encryption, use a desktop PDF tool or server-side qpdf.',
+        'X-Encryption': 'AES-256',
       },
     });
 
