@@ -4,9 +4,9 @@ import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
 
-// Default permission profile consumed by /api/pdf-lock:
-// allow low-res printing + copy + modify metadata/content flags.
+// Baseline permission profile for locked files until per-permission UI controls are added.
 const DEFAULT_LOCK_PERMISSIONS = ['print-low', 'copy', 'modify'] as const;
+const serializePermissionsForApi = (permissions: readonly string[]) => permissions.join(',');
 
 export default function LockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -57,7 +57,7 @@ export default function LockPdfPage() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('userPassword', password);
-      formData.append('permissions', DEFAULT_LOCK_PERMISSIONS.join(','));
+      formData.append('permissions', serializePermissionsForApi(DEFAULT_LOCK_PERMISSIONS));
 
       const response = await fetch('/api/pdf-lock', {
         method: 'POST',
