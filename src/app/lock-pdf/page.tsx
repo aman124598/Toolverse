@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
 
+const DEFAULT_LOCK_PERMISSIONS = 'print-low,copy,modify';
+
 export default function LockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState('');
@@ -53,7 +55,7 @@ export default function LockPdfPage() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('userPassword', password);
-      formData.append('permissions', 'print-low,copy,modify');
+      formData.append('permissions', DEFAULT_LOCK_PERMISSIONS);
 
       const response = await fetch('/api/pdf-lock', {
         method: 'POST',
