@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
-import { PDFDocument } from 'pdf-lib';
 
 export default function LockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -51,17 +50,22 @@ export default function LockPdfPage() {
     setError(null);
     
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      
-      pdfDoc.setProducer('Toolverse PDF Locker');
-      pdfDoc.setCreator('Toolverse');
-      
-      const lockedBytes = await pdfDoc.save({
-        useObjectStreams: true,
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('userPassword', password);
+      formData.append('permissions', 'print-low,copy,modify');
+
+      const response = await fetch('/api/pdf-lock', {
+        method: 'POST',
+        body: formData,
       });
-      
-      const blob = new Blob([new Uint8Array(lockedBytes)], { type: 'application/pdf' });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to lock PDF');
+      }
+
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       
       setResult({ url, fileName: `locked_${file.name}` });
@@ -75,7 +79,7 @@ export default function LockPdfPage() {
       
     } catch (err) {
       console.error(err);
-      setError('Failed to lock PDF. The file may be corrupted or already encrypted.');
+      setError(err instanceof Error ? err.message : 'Failed to lock PDF');
     } finally {
       setLocking(false);
     }
