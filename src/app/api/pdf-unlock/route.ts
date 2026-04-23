@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { decryptPDF } from 'cryptpdf';
 import { PDFDocument } from 'pdf-lib';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -25,20 +26,22 @@ export async function POST(request: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
+    let sourceBytes = new Uint8Array(arrayBuffer);
 
-    // Strategy: Try to load the PDF in progressively more permissive ways
+    // Strategy: Try AES-256 decryption first, then fall back to prior pdf-lib behavior
     let sourcePdf: PDFDocument | null = null;
     let unlockMethod = 'none';
 
-    // Step 1: Try loading with the provided password (without ignoring encryption)
+    // Step 1: Try decrypting Toolverse-encrypted PDFs
     if (password) {
       try {
-        sourcePdf = await PDFDocument.load(arrayBuffer, {
+        sourceBytes = await decryptPDF(sourceBytes, password);
+        sourcePdf = await PDFDocument.load(sourceBytes, {
           ignoreEncryption: false,
         });
-        unlockMethod = 'password';
+        unlockMethod = 'aes-256-password';
       } catch {
-        // Password didn't work or encryption type not supported
+        // Password didn't work or file is not in this encryption format
         sourcePdf = null;
       }
     }
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest) {
     // Step 2: Try loading without any password (might not be encrypted, or permissions-only lock)
     if (!sourcePdf) {
       try {
-        sourcePdf = await PDFDocument.load(arrayBuffer, {
+        sourcePdf = await PDFDocument.load(sourceBytes, {
           ignoreEncryption: false,
         });
         unlockMethod = 'no-encryption';
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Step 3: Fall back to ignoring encryption (strips permissions-based restrictions)
     if (!sourcePdf) {
       try {
-        sourcePdf = await PDFDocument.load(arrayBuffer, {
+        sourcePdf = await PDFDocument.load(sourceBytes, {
           ignoreEncryption: true,
         });
         unlockMethod = 'bypass';
