@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
 
+// Default permission profile consumed by /api/pdf-lock:
+// allow low-res printing + copy + modify metadata/content flags.
 const DEFAULT_LOCK_PERMISSIONS = ['print-low', 'copy', 'modify'] as const;
 
 export default function LockPdfPage() {
