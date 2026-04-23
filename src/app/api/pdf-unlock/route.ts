@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
     // Step 1: Try decrypting Toolverse-encrypted PDFs
     if (password) {
       try {
-        sourceBytes = await decryptPDF(sourceBytes, password);
+        const decryptedBytes = await decryptPDF(sourceBytes, password);
+        sourceBytes = new Uint8Array(decryptedBytes);
         sourcePdf = await PDFDocument.load(sourceBytes, {
           ignoreEncryption: false,
         });
