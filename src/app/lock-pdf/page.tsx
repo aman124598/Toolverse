@@ -3,15 +3,10 @@
 import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
-<<<<<<< HEAD
-import { PDFDocument } from 'pdf-lib';
-import Mobile from '@/lib/mobileAdapters';
-=======
 
 // Baseline permission profile for locked files until per-permission UI controls are added.
 const DEFAULT_LOCK_PERMISSIONS = ['print-low', 'copy', 'modify'] as const;
 const serializePermissionsForApi = (permissions: readonly string[]) => permissions.join(',');
->>>>>>> 2b4063ea188682ff06509e9ff993184850533007
 
 export default function LockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -59,19 +54,6 @@ export default function LockPdfPage() {
     setError(null);
 
     try {
-<<<<<<< HEAD
-      const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-
-      pdfDoc.setProducer('Toolverse PDF Locker');
-      pdfDoc.setCreator('Toolverse');
-
-      const lockedBytes = await pdfDoc.save({
-        useObjectStreams: true,
-      });
-
-      const blob = new Blob([new Uint8Array(lockedBytes)], { type: 'application/pdf' });
-=======
       const formData = new FormData();
       formData.append('file', file);
       formData.append('userPassword', password);
@@ -88,11 +70,9 @@ export default function LockPdfPage() {
       }
 
       const blob = await response.blob();
->>>>>>> 2b4063ea188682ff06509e9ff993184850533007
       const url = URL.createObjectURL(blob);
 
       setResult({ url, fileName: `locked_${file.name}` });
-      await Mobile.saveFile(blob, `locked_${file.name}`);
 
     } catch (err) {
       console.error(err);
