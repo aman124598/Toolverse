@@ -32,6 +32,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@vercel/analytics": "^1.6.1",
     "canvas": "^3.2.1",
+    "cryptpdf": "^0.1.1",
     "docx": "^9.5.1",
     "file-saver": "^2.0.5",
     "next": "16.1.1",

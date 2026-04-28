@@ -3,8 +3,15 @@
 import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
+<<<<<<< HEAD
 import { PDFDocument } from 'pdf-lib';
 import Mobile from '@/lib/mobileAdapters';
+=======
+
+// Baseline permission profile for locked files until per-permission UI controls are added.
+const DEFAULT_LOCK_PERMISSIONS = ['print-low', 'copy', 'modify'] as const;
+const serializePermissionsForApi = (permissions: readonly string[]) => permissions.join(',');
+>>>>>>> 2b4063ea188682ff06509e9ff993184850533007
 
 export default function LockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -52,6 +59,7 @@ export default function LockPdfPage() {
     setError(null);
 
     try {
+<<<<<<< HEAD
       const arrayBuffer = await file.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
 
@@ -63,6 +71,24 @@ export default function LockPdfPage() {
       });
 
       const blob = new Blob([new Uint8Array(lockedBytes)], { type: 'application/pdf' });
+=======
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('userPassword', password);
+      formData.append('permissions', serializePermissionsForApi(DEFAULT_LOCK_PERMISSIONS));
+
+      const response = await fetch('/api/pdf-lock', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to lock PDF');
+      }
+
+      const blob = await response.blob();
+>>>>>>> 2b4063ea188682ff06509e9ff993184850533007
       const url = URL.createObjectURL(blob);
 
       setResult({ url, fileName: `locked_${file.name}` });
@@ -70,7 +96,7 @@ export default function LockPdfPage() {
 
     } catch (err) {
       console.error(err);
-      setError('Failed to lock PDF. The file may be corrupted or already encrypted.');
+      setError(err instanceof Error ? err.message : 'Failed to lock PDF');
     } finally {
       setLocking(false);
     }

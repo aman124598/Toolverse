@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import ToolLayout, { Icons } from '@/components/ToolLayout';
+import ToolLayout from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
+<<<<<<< HEAD
 import { PDFDocument } from 'pdf-lib';
 import Mobile from '@/lib/mobileAdapters';
+=======
+>>>>>>> 2b4063ea188682ff06509e9ff993184850533007
 
 export default function UnlockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -41,6 +44,7 @@ export default function UnlockPdfPage() {
     setError(null);
 
     try {
+<<<<<<< HEAD
       const arrayBuffer = await file.arrayBuffer();
 
       const pdfDoc = await PDFDocument.load(arrayBuffer, {
@@ -65,6 +69,23 @@ export default function UnlockPdfPage() {
       const unlockedBytes = await newPdfDoc.save();
 
       const blob = new Blob([new Uint8Array(unlockedBytes)], { type: 'application/pdf' });
+=======
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('password', password);
+
+      const response = await fetch('/api/pdf-unlock', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to unlock PDF');
+      }
+
+      const blob = await response.blob();
+>>>>>>> 2b4063ea188682ff06509e9ff993184850533007
       const url = URL.createObjectURL(blob);
 
       setResult({ url, fileName: `unlocked_${file.name}` });
@@ -72,11 +93,7 @@ export default function UnlockPdfPage() {
 
     } catch (err) {
       console.error(err);
-      if (password) {
-        setError('Incorrect password. Please try again.');
-      } else {
-        setError('This PDF requires a password to unlock. Please enter the password below.');
-      }
+      setError(err instanceof Error ? err.message : 'Failed to unlock PDF');
     } finally {
       setUnlocking(false);
     }

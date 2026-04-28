@@ -74,8 +74,19 @@ export default function JpgToPdfPage() {
       setProgress(70);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to convert images');
+        const errorText = await response.text();
+        let errorMessage = 'Failed to convert images';
+
+        if (errorText) {
+          try {
+            const errorData = JSON.parse(errorText) as { error?: string };
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            errorMessage = errorText;
+          }
+        }
+
+        throw new Error(errorMessage);
       }
 
       const blob = await response.blob();
