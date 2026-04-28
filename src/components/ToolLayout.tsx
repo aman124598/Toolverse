@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ReactNode, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useToolStack } from '@/context/ToolStackContext';
+import Mobile from '@/lib/mobileAdapters';
 
 interface ToolLayoutProps {
   title: string;
@@ -13,10 +14,10 @@ interface ToolLayoutProps {
   gradient?: string;
 }
 
-export default function ToolLayout({ 
-  title, 
-  description, 
-  icon, 
+export default function ToolLayout({
+  title,
+  description,
+  icon,
   children,
   gradient = 'from-purple-500 to-pink-500'
 }: ToolLayoutProps) {
@@ -27,17 +28,24 @@ export default function ToolLayout({
   const [showReminder, setShowReminder] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     const timeout = setTimeout(() => {
-      if (!localStorage.getItem('toolverse_stack_reminder_dismissed')) {
-         setShowReminder(true);
-      }
+      void (async () => {
+        const dismissed = await Mobile.storageGet('toolverse_stack_reminder_dismissed');
+        if (!cancelled && !dismissed) {
+          setShowReminder(true);
+        }
+      })();
     }, 2000);
-    return () => clearTimeout(timeout);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, []);
 
   const dismissReminder = () => {
     setShowReminder(false);
-    localStorage.setItem('toolverse_stack_reminder_dismissed', 'true');
+    void Mobile.storageSet('toolverse_stack_reminder_dismissed', 'true');
   };
 
   const handleToggle = () => {
@@ -54,7 +62,7 @@ export default function ToolLayout({
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-full blur-[100px]" />
       </div>
 
-      <div 
+      <div
         className="fixed inset-0 opacity-[0.2]"
         style={{
           backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)`,
@@ -71,8 +79,8 @@ export default function ToolLayout({
               <Link href="/" className="font-semibold text-xl tracking-tight hover:text-gray-300 transition-colors">
                 Toolverse
               </Link>
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,37 +104,36 @@ export default function ToolLayout({
                 <p className="text-gray-400 text-lg md:text-xl font-medium">{description}</p>
               </div>
             </div>
-            
+
             {/* Stack Action */}
             <div className="relative">
               <button
-                 onClick={handleToggle}
-                 className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-medium transition-all shrink-0 ${
-                   stacked 
-                     ? 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400' 
-                     : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
-                 }`}
+                onClick={handleToggle}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-medium transition-all shrink-0 ${stacked
+                    ? 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400'
+                    : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
+                  }`}
               >
-                 {stacked ? (
-                   <>
-                     <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
-                     <span className="hidden sm:inline">In Your Stack</span>
-                     <span className="sm:hidden">Stacked</span>
-                   </>
-                 ) : (
-                   <>
-                     <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
-                     <span className="hidden sm:inline">Add to Stack</span>
-                     <span className="sm:hidden">Add</span>
-                   </>
-                 )}
+                {stacked ? (
+                  <>
+                    <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+                    <span className="hidden sm:inline">In Your Stack</span>
+                    <span className="sm:hidden">Stacked</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+                    <span className="hidden sm:inline">Add to Stack</span>
+                    <span className="sm:hidden">Add</span>
+                  </>
+                )}
               </button>
 
               {showReminder && !stacked && (
                 <div className="absolute top-full mt-4 right-0 z-50 w-72 p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-2xl text-white transform animate-in fade-in slide-in-from-top-2 border border-white/20">
                   <div className="absolute -top-2 right-6 w-4 h-4 bg-purple-500 rotate-45 border-t border-l border-white/20"></div>
-                  <button 
-                    onClick={dismissReminder} 
+                  <button
+                    onClick={dismissReminder}
                     className="absolute top-2 right-2 p-1 text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -136,7 +143,7 @@ export default function ToolLayout({
                     <div>
                       <h4 className="font-semibold text-sm mb-1 text-white">Use this tool often?</h4>
                       <p className="text-xs text-white/90 leading-relaxed mb-3">Add it to your personal stack for instant access anywhere on the platform.</p>
-                      <button 
+                      <button
                         onClick={handleToggle}
                         className="text-xs font-semibold bg-white text-purple-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors shadow-sm"
                       >
@@ -156,7 +163,7 @@ export default function ToolLayout({
             <div className="relative rounded-[2rem] bg-black/40 backdrop-blur-2xl border border-white/10 p-2 sm:p-3 shadow-2xl overflow-hidden">
               {/* Outer Glow */}
               <div className={`absolute -inset-[100px] bg-gradient-to-r ${gradient} opacity-5 blur-[100px] pointer-events-none`} />
-              
+
               {/* Inner Stitched Container */}
               <div className="relative rounded-[1.5rem] border-[1.5px] border-dashed border-white/15 p-6 sm:p-10 bg-black/20">
                 {children}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function FindReplaceTextPage() {
   const [text, setText] = useState('');
@@ -12,14 +13,14 @@ export default function FindReplaceTextPage() {
 
   const getReplacedText = () => {
     if (!find) return text;
-    
+
     let pattern = find;
     if (wholeWord) {
       pattern = `\\b${find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`;
     } else {
       pattern = find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
-    
+
     const regex = new RegExp(pattern, caseSensitive ? 'g' : 'gi');
     return text.replace(regex, replace);
   };
@@ -28,7 +29,7 @@ export default function FindReplaceTextPage() {
   const matchCount = find ? (text.match(new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), caseSensitive ? 'g' : 'gi')) || []).length : 0;
 
   const copy = async () => {
-    await navigator.clipboard.writeText(result);
+    await Mobile.copyText(result);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -109,8 +110,8 @@ export default function FindReplaceTextPage() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-medium text-gray-400">Result</label>
-                <button 
-                  onClick={copy} 
+                <button
+                  onClick={copy}
                   disabled={!result}
                   className="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50"
                 >

@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     default: "Toolverse - Free Online Tools",
     template: "%s | Toolverse",
   },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   description:
     "70+ free online tools for PDFs, calculations, text formatting, and more. No signup required. No limits.",
   keywords: [

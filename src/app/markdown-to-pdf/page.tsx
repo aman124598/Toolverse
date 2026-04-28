@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function MarkdownToPdfPage() {
   const [markdown, setMarkdown] = useState('');
@@ -60,17 +61,10 @@ Thank you for using Toolverse!`;
       }
 
       const blob = await response.blob();
-      
+
       setProgress(90);
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'markdown_to_pdf.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await Mobile.saveFile(blob, 'markdown_to_pdf.pdf');
 
       setProgress(100);
       setResult(true);
@@ -84,8 +78,8 @@ Thank you for using Toolverse!`;
   };
 
   return (
-    <ToolLayout 
-      title="Markdown to PDF" 
+    <ToolLayout
+      title="Markdown to PDF"
       description="Convert Markdown text to PDF document"
       icon={
         <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,9 +152,9 @@ Thank you for using Toolverse!`;
               </div>
             </div>
             <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-slate-500 to-gray-500 transition-all duration-500" 
-                style={{ width: `${progress}%` }} 
+              <div
+                className="h-full bg-gradient-to-r from-slate-500 to-gray-500 transition-all duration-500"
+                style={{ width: `${progress}%` }}
               />
             </div>
           </div>

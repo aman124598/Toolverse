@@ -2,12 +2,20 @@
 
 import { useState, useCallback, useRef } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function PdfEditorPage() {
   const [file, setFile] = useState<File | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+
+  const loadPdf = (pdfFile: File) => {
+    setFile(pdfFile);
+    const url = URL.createObjectURL(pdfFile);
+    setPdfUrl(url);
+    setError(null);
+  };
 
   const handleFileDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -18,19 +26,9 @@ export default function PdfEditorPage() {
     } else { setError('Please drop a PDF file'); }
   }, []);
 
-  const loadPdf = (pdfFile: File) => {
-    setFile(pdfFile);
-    const url = URL.createObjectURL(pdfFile);
-    setPdfUrl(url);
-    setError(null);
-  };
-
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
     if (!pdfUrl || !file) return;
-    const a = document.createElement('a');
-    a.href = pdfUrl;
-    a.download = `edited_${file.name}`;
-    a.click();
+    await Mobile.saveFile(file, `edited_${file.name}`);
   };
 
   const formatSize = (bytes: number) => bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(2) + ' MB';
@@ -123,7 +121,7 @@ export default function PdfEditorPage() {
           <div className="bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 rounded-xl p-5 border border-fuchsia-500/20">
             <h4 className="font-medium text-fuchsia-300 mb-3">Tips:</h4>
             <ul className="text-sm text-gray-400 space-y-2">
-              <li>• Use the browser's built-in PDF tools to annotate directly</li>
+              <li>• Use the browser&apos;s built-in PDF tools to annotate directly</li>
               <li>• Click the quick tools above to perform specific edits</li>
               <li>• Right-click on the PDF to access print options</li>
               <li>• Use Ctrl+F to search within the document</li>

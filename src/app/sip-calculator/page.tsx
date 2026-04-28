@@ -12,7 +12,7 @@ export default function SipCalculatorPage() {
   const n = (parseFloat(timePeriod) || 0) * 12;
 
   let futureValue = 0;
-  let totalInvested = P * n;
+  const totalInvested = P * n;
   let totalReturns = 0;
 
   if (P > 0 && r > 0 && n > 0) {
@@ -74,7 +74,7 @@ export default function SipCalculatorPage() {
                 <div className="text-sm text-gray-400 mb-1">Future Value</div>
                 <div className="text-4xl font-bold text-white">₹{futureValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 rounded-xl p-4 text-center">
                   <div className="text-xs text-gray-400 mb-1">Invested Amount</div>

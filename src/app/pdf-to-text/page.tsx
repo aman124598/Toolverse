@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function PdfToTextPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -50,12 +51,12 @@ export default function PdfToTextPage() {
       }
 
       const data = await response.json();
-      
+
       setProgress(90);
       setExtractedText(data.text || 'No text found in this PDF.');
       setPageCount(data.numPages || 0);
       setProgress(100);
-      
+
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to extract text. Please try another file.');
@@ -66,7 +67,7 @@ export default function PdfToTextPage() {
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(extractedText);
+      await Mobile.copyText(extractedText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -74,14 +75,9 @@ export default function PdfToTextPage() {
     }
   };
 
-  const downloadAsText = () => {
+  const downloadAsText = async () => {
     const blob = new Blob([extractedText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file?.name.replace('.pdf', '.txt') || 'extracted_text.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+    await Mobile.saveFile(blob, file?.name.replace('.pdf', '.txt') || 'extracted_text.txt');
   };
 
   const formatSize = (bytes: number) => {
@@ -94,8 +90,8 @@ export default function PdfToTextPage() {
   const charCount = extractedText.length;
 
   return (
-    <ToolLayout 
-      title="PDF to Text" 
+    <ToolLayout
+      title="PDF to Text"
       description="Extract all text content from PDF documents"
       icon={
         <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,9 +105,8 @@ export default function PdfToTextPage() {
           onDrop={handleFileDrop}
           onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
           onDragLeave={() => setDragActive(false)}
-          className={`border-2 border-dashed rounded-2xl p-16 text-center transition-all ${
-            dragActive ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-white/20'
-          }`}
+          className={`border-2 border-dashed rounded-2xl p-16 text-center transition-all ${dragActive ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-white/20'
+            }`}
         >
           <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
             <svg className="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,20 +117,20 @@ export default function PdfToTextPage() {
           <p className="text-gray-400 mb-6">or click to browse</p>
           <label className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl cursor-pointer hover:opacity-90 font-medium">
             Select PDF
-            <input 
-              type="file" 
-              accept=".pdf,application/pdf" 
-              onChange={(e) => { 
+            <input
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={(e) => {
                 if (e.target.files?.[0]) {
                   setFile(e.target.files[0]);
                   setExtractedText('');
                   setError(null);
                 }
-              }} 
-              className="hidden" 
+              }}
+              className="hidden"
             />
           </label>
-          
+
           <div className="mt-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
             <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium mb-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,8 +154,8 @@ export default function PdfToTextPage() {
               <p className="font-medium text-white">{file.name}</p>
               <p className="text-sm text-gray-400">{formatSize(file.size)}</p>
             </div>
-            <button 
-              onClick={() => { setFile(null); setExtractedText(''); }} 
+            <button
+              onClick={() => { setFile(null); setExtractedText(''); }}
               className="p-2 hover:bg-white/5 rounded-lg"
               disabled={extracting}
             >
@@ -181,9 +176,9 @@ export default function PdfToTextPage() {
                 </div>
               </div>
               <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500" 
-                  style={{ width: `${progress}%` }} 
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
@@ -216,11 +211,10 @@ export default function PdfToTextPage() {
               <div className="flex gap-3">
                 <button
                   onClick={copyToClipboard}
-                  className={`flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${
-                    copied 
-                      ? 'bg-emerald-500 text-white' 
+                  className={`flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${copied
+                      ? 'bg-emerald-500 text-white'
                       : 'bg-white/5 hover:bg-white/10 text-gray-300'
-                  }`}
+                    }`}
                 >
                   {copied ? (
                     <>
@@ -238,7 +232,7 @@ export default function PdfToTextPage() {
                     </>
                   )}
                 </button>
-                
+
                 <button
                   onClick={downloadAsText}
                   className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl font-medium 

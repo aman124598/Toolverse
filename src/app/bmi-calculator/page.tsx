@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 
+type BmiUnit = 'metric' | 'imperial';
+
 export default function BmiCalculatorPage() {
-  const [unit, setUnit] = useState<'metric' | 'imperial'>('metric');
+  const [unit, setUnit] = useState<BmiUnit>('metric');
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [heightFt, setHeightFt] = useState('');
@@ -14,6 +16,11 @@ export default function BmiCalculatorPage() {
     color: string;
     advice: string;
   } | null>(null);
+
+  const unitOptions = [
+    { id: 'metric', label: 'Metric (kg/cm)' },
+    { id: 'imperial', label: 'Imperial (lb/ft)' },
+  ] as const;
 
   const calculateBMI = () => {
     let bmi: number;
@@ -82,18 +89,17 @@ export default function BmiCalculatorPage() {
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700 mb-8">
           {/* Unit Toggle */}
           <div className="flex gap-3 justify-center mb-8">
-            {[
-              { id: 'metric', label: 'Metric (kg/cm)' },
-              { id: 'imperial', label: 'Imperial (lb/ft)' },
-            ].map((u) => (
+            {unitOptions.map((u) => (
               <button
                 key={u.id}
-                onClick={() => { setUnit(u.id as any); setResult(null); }}
-                className={`px-6 py-3 rounded-xl font-medium transition-all ${
-                  unit === u.id
+                onClick={() => {
+                  setUnit(u.id);
+                  setResult(null);
+                }}
+                className={`px-6 py-3 rounded-xl font-medium transition-all ${unit === u.id
                     ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
+                  }`}
               >
                 {u.label}
               </button>

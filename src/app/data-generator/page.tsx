@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Mobile from '@/lib/mobileAdapters';
 
 interface FakeData {
   name: string;
@@ -15,8 +16,8 @@ interface FakeData {
 
 export default function DataGeneratorPage() {
   const [count, setCount] = useState(5);
-  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<FakeData[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const generateData = async () => {
     setLoading(true);
@@ -36,7 +37,7 @@ export default function DataGeneratorPage() {
     }
   };
 
-  const copyAllData = () => {
+  const copyAllData = async () => {
     let text = '';
 
     data.forEach((item, index) => {
@@ -47,11 +48,12 @@ export default function DataGeneratorPage() {
       text += `Address: ${item.address}\n\n`;
     });
 
-    navigator.clipboard.writeText(text).then(() => {
+    try {
+      await Mobile.copyText(text);
       alert('Copied all data to clipboard!');
-    }).catch(err => {
+    } catch (err) {
       alert('Failed to copy: ' + err);
-    });
+    }
   };
 
   const clearData = () => {

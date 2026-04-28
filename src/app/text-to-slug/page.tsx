@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchButton } from '@/components/StitchComponents';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function TextToSlugPage() {
   const [input, setInput] = useState('');
@@ -22,15 +23,15 @@ export default function TextToSlugPage() {
 
   const copyToClipboard = () => {
     if (output) {
-      navigator.clipboard.writeText(output);
+      void Mobile.copyText(output);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   return (
-    <ToolLayout 
-      title="Text to Slug" 
+    <ToolLayout
+      title="Text to Slug"
       description="Convert any text into a clean, URL-friendly slug"
       icon={Icons.text}
       gradient="from-blue-500 to-cyan-500"
@@ -45,7 +46,7 @@ export default function TextToSlugPage() {
             className="w-full h-32 px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors resize-none"
           />
         </StitchContainer>
-        
+
         <div className="flex justify-center">
           <StitchButton onClick={handleConvert} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>}>
             Generate Slug

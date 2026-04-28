@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
 import { PDFDocument } from 'pdf-lib';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function UnlockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -35,46 +36,40 @@ export default function UnlockPdfPage() {
 
   const unlockPdf = async () => {
     if (!file) return;
-    
+
     setUnlocking(true);
     setError(null);
-    
+
     try {
       const arrayBuffer = await file.arrayBuffer();
-      
+
       const pdfDoc = await PDFDocument.load(arrayBuffer, {
         ignoreEncryption: true,
       });
-      
+
       const newPdfDoc = await PDFDocument.create();
       const pages = await newPdfDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
       pages.forEach(page => newPdfDoc.addPage(page));
-      
+
       newPdfDoc.setProducer('Toolverse PDF Unlocker');
       newPdfDoc.setCreator('Toolverse');
-      
+
       const originalTitle = pdfDoc.getTitle();
       const originalAuthor = pdfDoc.getAuthor();
       const originalSubject = pdfDoc.getSubject();
-      
+
       if (originalTitle) newPdfDoc.setTitle(originalTitle);
       if (originalAuthor) newPdfDoc.setAuthor(originalAuthor);
       if (originalSubject) newPdfDoc.setSubject(originalSubject);
-      
+
       const unlockedBytes = await newPdfDoc.save();
-      
+
       const blob = new Blob([new Uint8Array(unlockedBytes)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      
-      setResult({ url, fileName: `unlocked_${file.name}` });
 
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `unlocked_${file.name}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      
+      setResult({ url, fileName: `unlocked_${file.name}` });
+      await Mobile.saveFile(blob, `unlocked_${file.name}`);
+
     } catch (err) {
       console.error(err);
       if (password) {
@@ -125,7 +120,7 @@ export default function UnlockPdfPage() {
               <div className="flex-1">
                 <p className="font-medium text-white">{file.name}</p>
                 <div className="flex items-center gap-2 mt-1">
-                   <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">{formatSize(file.size)}</span>
+                  <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">{formatSize(file.size)}</span>
                 </div>
               </div>
               <button
@@ -144,15 +139,15 @@ export default function UnlockPdfPage() {
             <div className="space-y-4">
               <StitchContainer>
                 <div className="flex items-center gap-3 mb-6">
-                   <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                     <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                     </svg>
-                   </div>
-                   <div>
-                     <h3 className="font-semibold text-white">Unlock Authorization</h3>
-                     <p className="text-xs text-gray-400">If your file has an open password, enter it here</p>
-                   </div>
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Unlock Authorization</h3>
+                    <p className="text-xs text-gray-400">If your file has an open password, enter it here</p>
+                  </div>
                 </div>
 
                 <div className="relative">
@@ -178,28 +173,28 @@ export default function UnlockPdfPage() {
               </StitchContainer>
 
               <StitchContainer className="bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border-emerald-500/20">
-                 <h4 className="font-semibold text-emerald-400 mb-3 text-sm flex items-center gap-2">
-                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                   What this tool does
-                 </h4>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-300">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Removes edit restrictions
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Allows copying & pasting
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Unlocks printing features
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Removes open passwords
-                    </div>
-                 </div>
+                <h4 className="font-semibold text-emerald-400 mb-3 text-sm flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  What this tool does
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-300">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Removes edit restrictions
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Allows copying & pasting
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Unlocks printing features
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Removes open passwords
+                  </div>
+                </div>
               </StitchContainer>
             </div>
           )}
@@ -215,7 +210,7 @@ export default function UnlockPdfPage() {
 
           {file && !result && !unlocking && (
             <div className="mt-6">
-              <StitchButton 
+              <StitchButton
                 onClick={unlockPdf}
                 icon={
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -227,20 +222,20 @@ export default function UnlockPdfPage() {
               </StitchButton>
             </div>
           )}
-          
+
           {unlocking && (
             <div className="mt-6">
-             <StitchContainer>
-               <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                   <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-                 </div>
-                 <div>
-                   <p className="font-medium text-white">Decrypting Document...</p>
-                   <p className="text-sm text-gray-400">Removing barriers</p>
-                 </div>
-               </div>
-             </StitchContainer>
+              <StitchContainer>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">Decrypting Document...</p>
+                    <p className="text-sm text-gray-400">Removing barriers</p>
+                  </div>
+                </div>
+              </StitchContainer>
             </div>
           )}
 
@@ -259,7 +254,7 @@ export default function UnlockPdfPage() {
                   </div>
                 </div>
               </StitchContainer>
-              
+
               <button
                 onClick={() => { setFile(null); setResult(null); setPassword(''); }}
                 className="w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-gray-300 font-medium transition-all border border-white/10"

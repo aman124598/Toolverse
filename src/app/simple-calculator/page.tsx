@@ -3,6 +3,22 @@
 import { useState } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+  className?: string;
+  wide?: boolean;
+}
+
+const Button = ({ label, onClick, className = '', wide = false }: ButtonProps) => (
+  <button
+    onClick={onClick}
+    className={`h-16 rounded-2xl text-xl font-medium transition-all hover:scale-105 active:scale-95 ${wide ? 'col-span-2' : ''} ${className}`}
+  >
+    {label}
+  </button>
+);
+
 export default function SimpleCalculatorPage() {
   const [display, setDisplay] = useState('0');
   const [previousValue, setPreviousValue] = useState<number | null>(null);
@@ -77,7 +93,7 @@ export default function SimpleCalculatorPage() {
 
     const historyEntry = `${previousValue} ${operation} ${inputValue} = ${result}`;
     setHistory(prev => [historyEntry, ...prev.slice(0, 9)]);
-    
+
     setDisplay(String(result));
     setPreviousValue(null);
     setOperation(null);
@@ -99,15 +115,6 @@ export default function SimpleCalculatorPage() {
       setDisplay('0');
     }
   };
-
-  const Button = ({ label, onClick, className = '', wide = false }: { label: string; onClick: () => void; className?: string; wide?: boolean }) => (
-    <button
-      onClick={onClick}
-      className={`h-16 rounded-2xl text-xl font-medium transition-all hover:scale-105 active:scale-95 ${wide ? 'col-span-2' : ''} ${className}`}
-    >
-      {label}
-    </button>
-  );
 
   return (
     <ToolLayout
@@ -133,22 +140,22 @@ export default function SimpleCalculatorPage() {
           <Button label="±" onClick={toggleSign} className="bg-gray-600 text-white" />
           <Button label="%" onClick={percentage} className="bg-gray-600 text-white" />
           <Button label="÷" onClick={() => performOperation('÷')} className={`${operation === '÷' ? 'bg-white text-amber-500' : 'bg-amber-500 text-black'}`} />
-          
+
           <Button label="7" onClick={() => inputDigit('7')} className="bg-white/10 text-white" />
           <Button label="8" onClick={() => inputDigit('8')} className="bg-white/10 text-white" />
           <Button label="9" onClick={() => inputDigit('9')} className="bg-white/10 text-white" />
           <Button label="×" onClick={() => performOperation('×')} className={`${operation === '×' ? 'bg-white text-amber-500' : 'bg-amber-500 text-black'}`} />
-          
+
           <Button label="4" onClick={() => inputDigit('4')} className="bg-white/10 text-white" />
           <Button label="5" onClick={() => inputDigit('5')} className="bg-white/10 text-white" />
           <Button label="6" onClick={() => inputDigit('6')} className="bg-white/10 text-white" />
           <Button label="−" onClick={() => performOperation('−')} className={`${operation === '−' ? 'bg-white text-amber-500' : 'bg-amber-500 text-black'}`} />
-          
+
           <Button label="1" onClick={() => inputDigit('1')} className="bg-white/10 text-white" />
           <Button label="2" onClick={() => inputDigit('2')} className="bg-white/10 text-white" />
           <Button label="3" onClick={() => inputDigit('3')} className="bg-white/10 text-white" />
           <Button label="+" onClick={() => performOperation('+')} className={`${operation === '+' ? 'bg-white text-amber-500' : 'bg-amber-500 text-black'}`} />
-          
+
           <Button label="0" onClick={() => inputDigit('0')} className="bg-white/10 text-white" wide />
           <Button label="." onClick={inputDecimal} className="bg-white/10 text-white" />
           <Button label="=" onClick={calculate} className="bg-amber-500 text-black" />

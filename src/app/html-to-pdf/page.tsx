@@ -1,7 +1,8 @@
 'use client';
 
-import { useState} from 'react';
+import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function HtmlToPdfPage() {
   const [html, setHtml] = useState('');
@@ -63,17 +64,10 @@ export default function HtmlToPdfPage() {
       }
 
       const blob = await response.blob();
-      
+
       setProgress(90);
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'html_to_pdf.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await Mobile.saveFile(blob, 'html_to_pdf.pdf');
 
       setProgress(100);
       setResult(true);
@@ -87,8 +81,8 @@ export default function HtmlToPdfPage() {
   };
 
   return (
-    <ToolLayout 
-      title="HTML to PDF" 
+    <ToolLayout
+      title="HTML to PDF"
       description="Convert HTML content to PDF document"
       icon={
         <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,9 +136,9 @@ export default function HtmlToPdfPage() {
               </div>
             </div>
             <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-500" 
-                style={{ width: `${progress}%` }} 
+              <div
+                className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-500"
+                style={{ width: `${progress}%` }}
               />
             </div>
           </div>

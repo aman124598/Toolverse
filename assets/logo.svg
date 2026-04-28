@@ -1,0 +1,34 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A855F7" />
+      <stop offset="50%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="18" result="blur" />
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0.65 0 1 0 0 0.34 0 0 1 0 0.95 0 0 0 0.85 0" result="tint" />
+      <feMerge>
+        <feMergeNode in="tint" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)" />
+  <circle cx="512" cy="512" r="380" fill="none" stroke="url(#accent)" stroke-width="18" stroke-dasharray="90 42" opacity="0.35" />
+  <circle cx="512" cy="512" r="290" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="2" />
+
+  <g filter="url(#glow)">
+    <path d="M292 388C292 365 311 346 334 346H690C713 346 732 365 732 388V430C732 453 713 472 690 472H334C311 472 292 453 292 430V388Z" fill="url(#accent)"/>
+    <path d="M508 472V642" stroke="url(#accent)" stroke-width="78" stroke-linecap="round" />
+    <path d="M508 472L644 642" stroke="url(#accent)" stroke-width="78" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M508 472L372 642" stroke="url(#accent)" stroke-width="78" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="508" cy="472" r="42" fill="#FFFFFF" fill-opacity="0.92" />
+    <path d="M446 610H570" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" opacity="0.92" />
+  </g>
+</svg>

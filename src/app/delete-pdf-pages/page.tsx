@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
 import { PDFDocument } from 'pdf-lib';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function DeletePdfPagesPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -75,41 +76,35 @@ export default function DeletePdfPagesPage() {
 
   const deletePdfPages = async () => {
     if (!file || selectedPages.size === 0) return;
-    
+
     if (selectedPages.size >= pageCount) {
       setError('You cannot delete all pages. At least one page must remain.');
       return;
     }
-    
+
     setDeleting(true);
     setError(null);
-    
+
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
-      
+
       // Get pages to keep (0-indexed)
       const pagesToKeep = Array.from({ length: pageCount }, (_, i) => i)
         .filter(i => !selectedPages.has(i + 1));
-      
+
       // Create new PDF with only the pages to keep
       const newPdfDoc = await PDFDocument.create();
       const pages = await newPdfDoc.copyPages(pdfDoc, pagesToKeep);
       pages.forEach(page => newPdfDoc.addPage(page));
-      
+
       newPdfDoc.setProducer('Toolverse PDF Page Deleter');
       newPdfDoc.setCreator('Toolverse');
-      
+
       const newBytes = await newPdfDoc.save();
       const blob = new Blob([new Uint8Array(newBytes)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `deleted_${file.name}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      await Mobile.saveFile(blob, `deleted_${file.name}`);
 
       setResult({ url, pages: pagesToKeep.length });
     } catch (err) {
@@ -195,27 +190,26 @@ export default function DeletePdfPagesPage() {
               {/* Page Selection */}
               <StitchContainer>
                 <div className="flex items-center justify-between mb-4">
-                   <h3 className="text-sm font-semibold text-white">Select Pages to Delete</h3>
-                   <span className="text-sm font-medium bg-red-500/20 text-red-400 px-3 py-1 rounded-full">{selectedPages.size} Selected</span>
+                  <h3 className="text-sm font-semibold text-white">Select Pages to Delete</h3>
+                  <span className="text-sm font-medium bg-red-500/20 text-red-400 px-3 py-1 rounded-full">{selectedPages.size} Selected</span>
                 </div>
-                
+
                 <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-2 pb-2">
                   {Array.from({ length: pageCount }, (_, i) => i + 1).map((pageNum) => (
                     <button
                       key={pageNum}
                       onClick={() => togglePage(pageNum)}
-                      className={`relative aspect-square rounded-xl font-bold text-sm transition-all duration-300 flex flex-col items-center justify-center overflow-hidden border ${
-                        selectedPages.has(pageNum)
+                      className={`relative aspect-square rounded-xl font-bold text-sm transition-all duration-300 flex flex-col items-center justify-center overflow-hidden border ${selectedPages.has(pageNum)
                           ? 'border-red-500 bg-red-500/20 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]'
                           : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                      }`}
+                        }`}
                     >
                       {selectedPages.has(pageNum) && (
                         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:250%_250%,100%_100%] animate-shimmer" />
                       )}
                       {selectedPages.has(pageNum) && (
                         <svg className="w-4 h-4 text-red-400 absolute top-1 right-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       )}
                       <span className="relative z-10">{pageNum}</span>
@@ -257,7 +251,7 @@ export default function DeletePdfPagesPage() {
                   </div>
                 </div>
               </StitchContainer>
-              
+
               <button
                 onClick={() => { setFile(null); setResult(null); setPageCount(0); setSelectedPages(new Set()); }}
                 className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-gray-300 font-medium transition-all"
@@ -285,25 +279,24 @@ export default function DeletePdfPagesPage() {
           <button
             onClick={deletePdfPages}
             disabled={deleting || selectedPages.size >= pageCount}
-            className={`w-full group overflow-hidden relative rounded-2xl p-4 font-semibold text-lg transition-all duration-300 ${
-              deleting || selectedPages.size >= pageCount
+            className={`w-full group overflow-hidden relative rounded-2xl p-4 font-semibold text-lg transition-all duration-300 ${deleting || selectedPages.size >= pageCount
                 ? 'opacity-50 cursor-not-allowed grayscale'
                 : 'hover:-translate-y-1 hover:shadow-[0_0_40px_-10px_rgba(239,68,68,0.5)]'
-            }`}
+              }`}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-pink-500 to-red-600 bg-[length:200%_100%] animate-shimmer" />
             <div className="absolute inset-1 border border-dashed border-white/40 rounded-xl pointer-events-none" />
             <div className="relative flex items-center justify-center gap-3 text-white">
-               {deleting ? (
+              {deleting ? (
                 <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-               ) : (
+              ) : (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-               )}
+              )}
               {deleting ? 'Deleting Pages...' : `Delete ${selectedPages.size} Page${selectedPages.size !== 1 ? 's' : ''}`}
             </div>
           </button>

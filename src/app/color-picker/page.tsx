@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer } from '@/components/StitchComponents';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function ColorPickerPage() {
   const [color, setColor] = useState('#8B5CF6'); // Default purple
@@ -16,17 +17,19 @@ export default function ColorPickerPage() {
   };
 
   const hex2hsl = (hex: string) => {
-    let r = parseInt(hex.slice(1, 3), 16) / 255;
-    let g = parseInt(hex.slice(3, 5), 16) / 255;
-    let b = parseInt(hex.slice(5, 7), 16) / 255;
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
 
-    let max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h = 0, s, l = (max + min) / 2;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s;
+    const l = (max + min) / 2;
 
     if (max === min) {
       h = s = 0; // achromatic
     } else {
-      let d = max - min;
+      const d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       switch (max) {
         case r: h = (g - b) / d + (g < b ? 6 : 0); break;
@@ -42,54 +45,54 @@ export default function ColorPickerPage() {
   const rgb = hex2rgb(color);
   const hsl = hex2hsl(color);
 
-  const handleCopy = (val: string, label: string) => {
-    navigator.clipboard.writeText(val);
+  const handleCopy = async (val: string, label: string) => {
+    await Mobile.copyText(val);
     setCopied(label);
     setTimeout(() => setCopied(null), 2000);
   };
 
   return (
-    <ToolLayout 
-      title="Color Picker" 
+    <ToolLayout
+      title="Color Picker"
       description="Pick colors and convert between HEX, RGB, and HSL formats"
       icon={Icons.palette}
       gradient="from-fuchsia-500 to-purple-500"
     >
       <div className="space-y-6">
         <StitchContainer className="text-center">
-           <div className="mb-8">
-             <div 
-               className="w-32 h-32 sm:w-48 sm:h-48 rounded-full mx-auto shadow-[0_0_50px_rgba(0,0,0,0.5)] border-4 border-white/20 transition-colors duration-200 cursor-pointer overflow-hidden relative"
-               style={{ backgroundColor: color }}
-             >
-                <input 
-                  type="color" 
-                  value={color} 
-                  onChange={(e) => setColor(e.target.value)} 
-                  className="absolute inset-0 w-[200%] h-[200%] -top-[50%] -left-[50%] cursor-pointer opacity-0"
-                />
-             </div>
-             <p className="mt-4 text-gray-400 text-sm flex items-center justify-center gap-1">Tap the circle to change color</p>
-           </div>
-           
-           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { label: 'HEX', val: color.toUpperCase() },
-                { label: 'RGB', val: rgb },
-                { label: 'HSL', val: hsl }
-              ].map((fmt) => (
-                <div key={fmt.label} className="bg-black/40 border border-white/10 rounded-xl p-4 text-left relative group">
-                  <span className="text-xs text-gray-500 font-medium">{fmt.label}</span>
-                  <div className="text-white font-mono mt-1 text-sm">{fmt.val}</div>
-                  <button 
-                    onClick={() => handleCopy(fmt.val, fmt.label)}
-                    className="absolute top-4 right-4 text-xs text-fuchsia-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    {copied === fmt.label ? 'Copied!' : 'Copy'}
-                  </button>
-                </div>
-              ))}
-           </div>
+          <div className="mb-8">
+            <div
+              className="w-32 h-32 sm:w-48 sm:h-48 rounded-full mx-auto shadow-[0_0_50px_rgba(0,0,0,0.5)] border-4 border-white/20 transition-colors duration-200 cursor-pointer overflow-hidden relative"
+              style={{ backgroundColor: color }}
+            >
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="absolute inset-0 w-[200%] h-[200%] -top-[50%] -left-[50%] cursor-pointer opacity-0"
+              />
+            </div>
+            <p className="mt-4 text-gray-400 text-sm flex items-center justify-center gap-1">Tap the circle to change color</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { label: 'HEX', val: color.toUpperCase() },
+              { label: 'RGB', val: rgb },
+              { label: 'HSL', val: hsl }
+            ].map((fmt) => (
+              <div key={fmt.label} className="bg-black/40 border border-white/10 rounded-xl p-4 text-left relative group">
+                <span className="text-xs text-gray-500 font-medium">{fmt.label}</span>
+                <div className="text-white font-mono mt-1 text-sm">{fmt.val}</div>
+                <button
+                  onClick={() => handleCopy(fmt.val, fmt.label)}
+                  className="absolute top-4 right-4 text-xs text-fuchsia-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  {copied === fmt.label ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            ))}
+          </div>
         </StitchContainer>
       </div>
     </ToolLayout>

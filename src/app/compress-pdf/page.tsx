@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function CompressPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -54,18 +55,11 @@ export default function CompressPdfPage() {
       const savings = parseInt(response.headers.get('X-Savings-Percent') || '0');
 
       const blob = await response.blob();
-      
+
       setProgress(90);
 
       // Download the compressed PDF
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `compressed_${file.name}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await Mobile.saveFile(blob, `compressed_${file.name}`);
 
       setProgress(100);
       setResult({ originalSize, compressedSize, savings });
@@ -85,8 +79,8 @@ export default function CompressPdfPage() {
   };
 
   return (
-    <ToolLayout 
-      title="Compress PDF" 
+    <ToolLayout
+      title="Compress PDF"
       description="Reduce PDF file size while maintaining extreme quality"
       icon={Icons.compress}
       gradient="from-purple-500 to-pink-500"
@@ -117,8 +111,8 @@ export default function CompressPdfPage() {
                 <p className="font-medium text-white">{file.name}</p>
                 <p className="text-sm text-gray-400">{formatSize(file.size)}</p>
               </div>
-              <button 
-                onClick={() => { setFile(null); setResult(null); }} 
+              <button
+                onClick={() => { setFile(null); setResult(null); }}
                 className="p-2 hover:bg-white/10 rounded-xl transition-colors"
                 disabled={compressing}
               >
@@ -142,11 +136,10 @@ export default function CompressPdfPage() {
                   <button
                     key={opt.key}
                     onClick={() => setQuality(opt.key as 'low' | 'medium' | 'high')}
-                    className={`relative p-4 rounded-xl border transition-all duration-300 overflow-hidden group ${
-                      quality === opt.key
+                    className={`relative p-4 rounded-xl border transition-all duration-300 overflow-hidden group ${quality === opt.key
                         ? 'bg-purple-500/20 border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
                         : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
-                    }`}
+                      }`}
                   >
                     {quality === opt.key && (
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10" />
@@ -174,9 +167,9 @@ export default function CompressPdfPage() {
                 </div>
               </div>
               <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500" 
-                  style={{ width: `${progress}%` }} 
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </StitchContainer>
@@ -197,7 +190,7 @@ export default function CompressPdfPage() {
                     <p className="text-sm text-gray-400">Your PDF is now highly optimized</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="bg-black/40 rounded-xl p-4 border border-white/5">
                     <p className="text-xs text-gray-400 mb-1">Original</p>
@@ -240,8 +233,8 @@ export default function CompressPdfPage() {
       {/* Compress Button */}
       {file && !result && !compressing && (
         <div className="mt-6">
-          <StitchButton 
-            onClick={compressPdf} 
+          <StitchButton
+            onClick={compressPdf}
             icon={Icons.compress}
           >
             Compress PDF

@@ -3,20 +3,13 @@
 import { useState, useCallback } from 'react';
 import ToolLayout from '@/components/ToolLayout';
 import { PDFDocument } from 'pdf-lib';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function PdfToPngPage() {
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
-
-  const handleFileDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragActive(false);
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile?.type === 'application/pdf') await loadPdf(droppedFile);
-    else setError('Please drop a PDF file');
-  }, []);
 
   const loadPdf = async (pdfFile: File) => {
     try {
@@ -26,6 +19,14 @@ export default function PdfToPngPage() {
       setError(null);
     } catch { setError('Failed to load PDF.'); }
   };
+
+  const handleFileDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile?.type === 'application/pdf') await loadPdf(droppedFile);
+    else setError('Please drop a PDF file');
+  }, []);
 
   const formatSize = (bytes: number) => bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(2) + ' MB';
 
@@ -65,11 +66,11 @@ export default function PdfToPngPage() {
             <ol className="text-sm text-gray-400 space-y-2 list-decimal list-inside">
               <li>Navigate to the page you want to convert</li>
               <li>Use browser print dialog (Ctrl/Cmd + P)</li>
-              <li>Select "Save as PDF" or use a PDF to image printer</li>
+              <li>Select &quot;Save as PDF&quot; or use a PDF to image printer</li>
               <li>Alternatively, use the screenshot tool (Windows: Win+Shift+S, Mac: Cmd+Shift+4)</li>
             </ol>
             <div className="mt-4 flex gap-3">
-              <button onClick={() => window.open(URL.createObjectURL(file), '_blank')} className="px-4 py-2 bg-teal-500/20 hover:bg-teal-500/30 rounded-lg text-sm text-teal-300 transition-colors">
+              <button onClick={() => { void Mobile.openUrl(URL.createObjectURL(file)); }} className="px-4 py-2 bg-teal-500/20 hover:bg-teal-500/30 rounded-lg text-sm text-teal-300 transition-colors">
                 Open in New Tab
               </button>
               <button onClick={() => window.print()} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-gray-400 transition-colors">

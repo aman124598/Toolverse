@@ -7,10 +7,24 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "export": "node -e \"console.log('Static export is disabled for this app because it uses API routes. Use npm run build and Capacitor with a live URL or server configuration.')\"",
+    "cap:init": "npx cap init Toolverse com.example.toolverse --web-dir=out",
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios",
     "generate-tools": "tsx scripts/generate-all-tools.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@capacitor/android": "^5.7.8",
+    "@capacitor/browser": "^5.0.0",
+    "@capacitor/clipboard": "^5.0.0",
+    "@capacitor/core": "^5.0.0",
+    "@capacitor/filesystem": "^5.0.0",
+    "@capacitor/preferences": "^5.0.0",
+    "@capacitor/share": "^5.0.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
     "@pdf-lib/fontkit": "^1.1.1",
@@ -32,6 +46,8 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^5.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^20",

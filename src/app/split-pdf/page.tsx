@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function SplitPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -84,18 +85,11 @@ export default function SplitPdfPage() {
       }
 
       const blob = await response.blob();
-      
+
       setProgress(90);
 
       // Download the split PDF
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `split_${file.name}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await Mobile.saveFile(blob, `split_${file.name}`);
 
       setProgress(100);
       setResult(true);
@@ -115,8 +109,8 @@ export default function SplitPdfPage() {
   };
 
   return (
-    <ToolLayout 
-      title="Split PDF" 
+    <ToolLayout
+      title="Split PDF"
       description="Extract pages and split your PDFs into precise segments"
       icon={Icons.split}
       gradient="from-purple-500 to-pink-500"
@@ -146,8 +140,8 @@ export default function SplitPdfPage() {
                   <span className="text-xs text-gray-400">{formatSize(file.size)}</span>
                 </div>
               </div>
-              <button 
-                onClick={() => { setFile(null); setResult(false); setPageCount(0); }} 
+              <button
+                onClick={() => { setFile(null); setResult(false); setPageCount(0); }}
                 className="p-2 hover:bg-white/10 rounded-xl transition-colors"
                 disabled={splitting}
               >
@@ -172,11 +166,10 @@ export default function SplitPdfPage() {
                     <button
                       key={opt.key}
                       onClick={() => setSplitMode(opt.key as 'range' | 'extract' | 'every')}
-                      className={`relative p-4 rounded-xl border text-left transition-all duration-300 overflow-hidden ${
-                        splitMode === opt.key
+                      className={`relative p-4 rounded-xl border text-left transition-all duration-300 overflow-hidden ${splitMode === opt.key
                           ? 'bg-purple-500/20 border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
                           : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
-                      }`}
+                        }`}
                     >
                       {splitMode === opt.key && (
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10" />
@@ -204,29 +197,29 @@ export default function SplitPdfPage() {
                       placeholder="e.g., 1-5, 8, 10-12"
                       className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 transition-colors"
                     />
-                    
+
                     {/* Quick Select */}
                     <div className="flex flex-wrap gap-2 mt-4">
-                      <button 
+                      <button
                         onClick={() => setRangeInput('1')}
                         className="px-3 py-1.5 border border-white/10 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-gray-400 transition-colors"
                       >
                         First page
                       </button>
-                      <button 
+                      <button
                         onClick={() => setRangeInput(pageCount.toString())}
                         className="px-3 py-1.5 border border-white/10 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-gray-400 transition-colors"
                       >
                         Last page
                       </button>
-                      <button 
-                        onClick={() => setRangeInput(`1-${Math.ceil(pageCount/2)}`)}
+                      <button
+                        onClick={() => setRangeInput(`1-${Math.ceil(pageCount / 2)}`)}
                         className="px-3 py-1.5 border border-white/10 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-gray-400 transition-colors"
                       >
                         First half
                       </button>
-                      <button 
-                        onClick={() => setRangeInput(`${Math.ceil(pageCount/2)+1}-${pageCount}`)}
+                      <button
+                        onClick={() => setRangeInput(`${Math.ceil(pageCount / 2) + 1}-${pageCount}`)}
                         className="px-3 py-1.5 border border-white/10 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-gray-400 transition-colors"
                       >
                         Second half
@@ -266,9 +259,9 @@ export default function SplitPdfPage() {
                 </div>
               </div>
               <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500" 
-                  style={{ width: `${progress}%` }} 
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </StitchContainer>
@@ -315,7 +308,7 @@ export default function SplitPdfPage() {
       {/* Split Button */}
       {file && !result && !splitting && (
         <div className="mt-6">
-          <StitchButton 
+          <StitchButton
             onClick={splitPdf}
             icon={Icons.split}
           >

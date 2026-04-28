@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function JpgToPdfPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -16,7 +17,7 @@ export default function JpgToPdfPage() {
   const handleFileDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
-    const droppedFiles = Array.from(e.dataTransfer.files).filter(f => 
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(f =>
       f.type.startsWith('image/') || f.name.match(/\.(jpg|jpeg|png|webp|gif)$/i)
     );
     if (droppedFiles.length > 0) {
@@ -78,17 +79,10 @@ export default function JpgToPdfPage() {
       }
 
       const blob = await response.blob();
-      
+
       setProgress(90);
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'images_to_pdf.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await Mobile.saveFile(blob, 'images_to_pdf.pdf');
 
       setProgress(100);
       setResult(true);
@@ -108,8 +102,8 @@ export default function JpgToPdfPage() {
   };
 
   return (
-    <ToolLayout 
-      title="JPG to PDF" 
+    <ToolLayout
+      title="JPG to PDF"
       description="Convert JPG, PNG, and other images to PDF"
       icon={
         <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,9 +117,8 @@ export default function JpgToPdfPage() {
         onDrop={handleFileDrop}
         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
-        className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${
-          dragActive ? 'border-amber-500 bg-amber-500/5' : 'border-white/10 hover:border-white/20'
-        }`}
+        className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${dragActive ? 'border-amber-500 bg-amber-500/5' : 'border-white/10 hover:border-white/20'
+          }`}
       >
         <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
           <svg className="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,12 +129,12 @@ export default function JpgToPdfPage() {
         <p className="text-gray-400 text-sm mb-4">JPG, PNG, WebP, GIF supported</p>
         <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl cursor-pointer hover:opacity-90 font-medium">
           Add Images
-          <input 
-            type="file" 
-            accept="image/*" 
-            multiple 
-            onChange={handleFileSelect} 
-            className="hidden" 
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
           />
         </label>
       </div>
@@ -151,8 +144,8 @@ export default function JpgToPdfPage() {
         <div className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-400">{files.length} images</span>
-            <button 
-              onClick={() => setFiles([])} 
+            <button
+              onClick={() => setFiles([])}
               className="text-xs text-red-400 hover:text-red-300"
             >
               Remove all
@@ -161,12 +154,12 @@ export default function JpgToPdfPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-[300px] overflow-y-auto">
             {files.map((file, index) => (
-              <div 
+              <div
                 key={`${file.name}-${index}`}
                 className="relative group bg-black/20 rounded-xl border border-white/5 overflow-hidden"
               >
-                <img 
-                  src={URL.createObjectURL(file)} 
+                <img
+                  src={URL.createObjectURL(file)}
                   alt={file.name}
                   className="w-full h-24 object-cover"
                 />
@@ -207,47 +200,43 @@ export default function JpgToPdfPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setOrientation('portrait')}
-                    className={`flex-1 py-2 rounded-lg text-sm ${
-                      orientation === 'portrait' 
-                        ? 'bg-amber-500 text-white' 
+                    className={`flex-1 py-2 rounded-lg text-sm ${orientation === 'portrait'
+                        ? 'bg-amber-500 text-white'
                         : 'bg-white/5 text-gray-400'
-                    }`}
+                      }`}
                   >
                     Portrait
                   </button>
                   <button
                     onClick={() => setOrientation('landscape')}
-                    className={`flex-1 py-2 rounded-lg text-sm ${
-                      orientation === 'landscape' 
-                        ? 'bg-amber-500 text-white' 
+                    className={`flex-1 py-2 rounded-lg text-sm ${orientation === 'landscape'
+                        ? 'bg-amber-500 text-white'
                         : 'bg-white/5 text-gray-400'
-                    }`}
+                      }`}
                   >
                     Landscape
                   </button>
                 </div>
               </div>
-              
+
               <div className="bg-black/20 rounded-xl p-4 border border-white/5">
                 <label className="text-sm text-gray-400 mb-2 block">Fit Mode</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setFitMode('fit')}
-                    className={`flex-1 py-2 rounded-lg text-sm ${
-                      fitMode === 'fit' 
-                        ? 'bg-amber-500 text-white' 
+                    className={`flex-1 py-2 rounded-lg text-sm ${fitMode === 'fit'
+                        ? 'bg-amber-500 text-white'
                         : 'bg-white/5 text-gray-400'
-                    }`}
+                      }`}
                   >
                     Fit
                   </button>
                   <button
                     onClick={() => setFitMode('fill')}
-                    className={`flex-1 py-2 rounded-lg text-sm ${
-                      fitMode === 'fill' 
-                        ? 'bg-amber-500 text-white' 
+                    className={`flex-1 py-2 rounded-lg text-sm ${fitMode === 'fill'
+                        ? 'bg-amber-500 text-white'
                         : 'bg-white/5 text-gray-400'
-                    }`}
+                      }`}
                   >
                     Fill
                   </button>
@@ -269,9 +258,9 @@ export default function JpgToPdfPage() {
             </div>
           </div>
           <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500" 
-              style={{ width: `${progress}%` }} 
+            <div
+              className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500"
+              style={{ width: `${progress}%` }}
             />
           </div>
         </div>

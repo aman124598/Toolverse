@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function RotatePdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -66,17 +67,10 @@ export default function RotatePdfPage() {
       }
 
       const blob = await response.blob();
-      
+
       setProgress(90);
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `rotated_${file.name}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await Mobile.saveFile(blob, `rotated_${file.name}`);
 
       setProgress(100);
       setResult(true);
@@ -96,8 +90,8 @@ export default function RotatePdfPage() {
   };
 
   return (
-    <ToolLayout 
-      title="Rotate PDF" 
+    <ToolLayout
+      title="Rotate PDF"
       description="Quickly rotate all or specific pages of your PDF document"
       icon={Icons.rotate}
       gradient="from-cyan-500 to-blue-500"
@@ -127,8 +121,8 @@ export default function RotatePdfPage() {
                   <span className="text-xs text-gray-400">{formatSize(file.size)}</span>
                 </div>
               </div>
-              <button 
-                onClick={() => { setFile(null); setResult(false); setPageCount(0); }} 
+              <button
+                onClick={() => { setFile(null); setResult(false); setPageCount(0); }}
                 className="p-2 hover:bg-white/10 rounded-xl transition-colors"
                 disabled={rotating}
               >
@@ -155,22 +149,21 @@ export default function RotatePdfPage() {
                     <button
                       key={opt.deg}
                       onClick={() => setRotation(opt.deg)}
-                      className={`relative p-4 rounded-xl border transition-all duration-300 overflow-hidden ${
-                        rotation === opt.deg
+                      className={`relative p-4 rounded-xl border transition-all duration-300 overflow-hidden ${rotation === opt.deg
                           ? 'bg-cyan-500/20 border-cyan-500/50 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
                           : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
-                      }`}
+                        }`}
                     >
                       {rotation === opt.deg && (
-                         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-blue-500/10" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-blue-500/10" />
                       )}
                       <div className="relative z-10 w-full flex flex-col items-center">
                         <div className="w-10 h-10 mb-2 flex items-center justify-center rounded-full bg-white/5">
-                          <svg 
+                          <svg
                             className={`w-6 h-6 transition-transform duration-500 ${rotation === opt.deg ? 'text-white' : ''}`}
                             style={{ transform: `rotate(${opt.deg}deg)` }}
-                            fill="none" 
-                            stroke="currentColor" 
+                            fill="none"
+                            stroke="currentColor"
                             viewBox="0 0 24 24"
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -189,22 +182,20 @@ export default function RotatePdfPage() {
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <button
                     onClick={() => setApplyTo('all')}
-                    className={`relative p-4 rounded-xl border text-left transition-all duration-300 ${
-                      applyTo === 'all'
+                    className={`relative p-4 rounded-xl border text-left transition-all duration-300 ${applyTo === 'all'
                         ? 'bg-cyan-500/20 border-cyan-500 text-white'
                         : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
-                    }`}
+                      }`}
                   >
                     <p className="font-medium">All Pages</p>
                     <p className="text-xs mt-1 opacity-70">Rotate entire document</p>
                   </button>
                   <button
                     onClick={() => setApplyTo('custom')}
-                    className={`relative p-4 rounded-xl border text-left transition-all duration-300 ${
-                      applyTo === 'custom'
+                    className={`relative p-4 rounded-xl border text-left transition-all duration-300 ${applyTo === 'custom'
                         ? 'bg-cyan-500/20 border-cyan-500 text-white'
                         : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
-                    }`}
+                      }`}
                   >
                     <p className="font-medium">Custom Pages</p>
                     <p className="text-xs mt-1 opacity-70">Specify particular pages</p>
@@ -213,7 +204,7 @@ export default function RotatePdfPage() {
 
                 {applyTo === 'custom' && (
                   <div>
-                     <label className="block text-sm text-gray-400 mb-2">Page Numbers (1-{pageCount})</label>
+                    <label className="block text-sm text-gray-400 mb-2">Page Numbers (1-{pageCount})</label>
                     <input
                       type="text"
                       value={customPages}
@@ -240,9 +231,9 @@ export default function RotatePdfPage() {
                 </div>
               </div>
               <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500" 
-                  style={{ width: `${progress}%` }} 
+                <div
+                  className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </StitchContainer>
@@ -289,7 +280,7 @@ export default function RotatePdfPage() {
       {/* Rotate Button */}
       {file && !result && !rotating && (
         <div className="mt-6">
-          <StitchButton 
+          <StitchButton
             onClick={rotatePdf}
             icon={Icons.rotate}
           >

@@ -3,6 +3,16 @@
 import { useState, useRef, MouseEvent } from 'react';
 import Link from 'next/link';
 
+function BrandMark() {
+  return (
+    <img
+      src="/icon.svg"
+      alt="Toolverse logo"
+      className="h-10 w-10 rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(168,85,247,0.35)]"
+    />
+  );
+}
+
 // Aceternity-style Card with spotlight effect
 function SpotlightCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const divRef = useRef<HTMLDivElement>(null);
@@ -75,7 +85,7 @@ export default function HomePage() {
       </div>
 
       {/* Grid Pattern */}
-      <div 
+      <div
         className="fixed inset-0 opacity-[0.02]"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -90,13 +100,14 @@ export default function HomePage() {
           <div className="relative w-full max-w-4xl rounded-full backdrop-blur-xl bg-white/[0.08] border border-white/10 shadow-lg shadow-purple-500/10">
             {/* Inner Glow */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-            
+
             <div className="relative flex items-center justify-between px-6 py-3">
-              <Link href="/" className="font-bold text-xl tracking-tight hover:text-gray-300 transition-colors">
-                Toolverse
+              <Link href="/" className="flex items-center gap-3 font-bold text-xl tracking-tight hover:text-gray-300 transition-colors">
+                <BrandMark />
+                <span>Toolverse</span>
               </Link>
-              <Link 
-                href="/tools" 
+              <Link
+                href="/tools"
                 className="px-5 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm rounded-full font-medium transition-all hover:scale-105 active:scale-95"
               >
                 All Tools
@@ -127,7 +138,7 @@ export default function HomePage() {
 
             {/* Subtitle */}
             <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-              Free online tools for PDFs, calculations, text formatting, code formatting, and more. 
+              Free online tools for PDFs, calculations, text formatting, code formatting, and more.
               No signup. No limits. Just tools that work.
             </p>
 
@@ -174,8 +185,8 @@ export default function HomePage() {
             </div>
 
             <div className="text-center mt-10">
-              <Link 
-                href="/tools" 
+              <Link
+                href="/tools"
                 className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
               >
                 View all 70+ tools

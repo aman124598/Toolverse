@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
 import { PDFDocument } from 'pdf-lib';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function LockPdfPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -36,7 +37,7 @@ export default function LockPdfPage() {
 
   const lockPdf = async () => {
     if (!file || !password) return;
-    
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -46,33 +47,27 @@ export default function LockPdfPage() {
       setError('Password must be at least 4 characters');
       return;
     }
-    
+
     setLocking(true);
     setError(null);
-    
+
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
-      
+
       pdfDoc.setProducer('Toolverse PDF Locker');
       pdfDoc.setCreator('Toolverse');
-      
+
       const lockedBytes = await pdfDoc.save({
         useObjectStreams: true,
       });
-      
+
       const blob = new Blob([new Uint8Array(lockedBytes)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      
+
       setResult({ url, fileName: `locked_${file.name}` });
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `locked_${file.name}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      
+      await Mobile.saveFile(blob, `locked_${file.name}`);
+
     } catch (err) {
       console.error(err);
       setError('Failed to lock PDF. The file may be corrupted or already encrypted.');
@@ -95,7 +90,7 @@ export default function LockPdfPage() {
     if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength++;
     if (/\d/.test(pwd)) strength++;
     if (/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) strength++;
-    
+
     if (strength <= 1) return { strength: 20, label: 'Weak', color: 'from-red-500 to-red-600' };
     if (strength <= 2) return { strength: 40, label: 'Fair', color: 'from-orange-500 to-orange-600' };
     if (strength <= 3) return { strength: 60, label: 'Good', color: 'from-yellow-500 to-yellow-600' };
@@ -132,7 +127,7 @@ export default function LockPdfPage() {
               <div className="flex-1">
                 <p className="font-medium text-white">{file.name}</p>
                 <div className="flex items-center gap-2 mt-1">
-                   <span className="text-xs text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">{formatSize(file.size)}</span>
+                  <span className="text-xs text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">{formatSize(file.size)}</span>
                 </div>
               </div>
               <button
@@ -151,17 +146,17 @@ export default function LockPdfPage() {
             <div className="space-y-4">
               <StitchContainer>
                 <div className="flex items-center gap-3 mb-6">
-                   <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                     <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                     </svg>
-                   </div>
-                   <div>
-                     <h3 className="font-semibold text-white">Encryption Password</h3>
-                     <p className="text-xs text-gray-400">Set a strong password for your document</p>
-                   </div>
+                  <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Encryption Password</h3>
+                    <p className="text-xs text-gray-400">Set a strong password for your document</p>
+                  </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="relative">
                     <input
@@ -186,12 +181,12 @@ export default function LockPdfPage() {
 
                   {password && (
                     <div className="space-y-2">
-                       <div className="flex justify-between items-center px-1">
-                         <span className="text-xs text-gray-400">Password Strength</span>
-                         <span className={`text-xs font-medium ${passwordStrength.color.replace('from-', 'text-').split(' ')[0]}`}>{passwordStrength.label}</span>
-                       </div>
+                      <div className="flex justify-between items-center px-1">
+                        <span className="text-xs text-gray-400">Password Strength</span>
+                        <span className={`text-xs font-medium ${passwordStrength.color.replace('from-', 'text-').split(' ')[0]}`}>{passwordStrength.label}</span>
+                      </div>
                       <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className={`h-full bg-gradient-to-r ${passwordStrength.color} transition-all duration-300`}
                           style={{ width: `${passwordStrength.strength}%` }}
                         />
@@ -220,25 +215,25 @@ export default function LockPdfPage() {
 
               {/* Protection Features */}
               <StitchContainer className="bg-gradient-to-br from-red-500/5 to-rose-500/5 border-red-500/20">
-                 <h4 className="font-semibold text-red-400 mb-3 text-sm">Security Features Applied:</h4>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-300">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Password required to open
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Copy & paste disabled
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Print limited to low resolution
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Modifications disabled
-                    </div>
-                 </div>
+                <h4 className="font-semibold text-red-400 mb-3 text-sm">Security Features Applied:</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-300">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Password required to open
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Copy & paste disabled
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Print limited to low resolution
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Modifications disabled
+                  </div>
+                </div>
               </StitchContainer>
             </div>
           )}
@@ -256,29 +251,29 @@ export default function LockPdfPage() {
           {/* Action Button */}
           {file && !result && !locking && (
             <div className="mt-6">
-               <StitchButton 
-                 onClick={lockPdf}
-                 disabled={!password || !confirmPassword || password !== confirmPassword}
-                 icon={Icons.lock}
-               >
-                 Lock PDF Now
-               </StitchButton>
+              <StitchButton
+                onClick={lockPdf}
+                disabled={!password || !confirmPassword || password !== confirmPassword}
+                icon={Icons.lock}
+              >
+                Lock PDF Now
+              </StitchButton>
             </div>
           )}
 
           {locking && (
             <div className="mt-6">
-             <StitchContainer>
-               <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                   <div className="w-5 h-5 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
-                 </div>
-                 <div>
-                   <p className="font-medium text-white">Encrypting Document...</p>
-                   <p className="text-sm text-gray-400">Applying security</p>
-                 </div>
-               </div>
-             </StitchContainer>
+              <StitchContainer>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">Encrypting Document...</p>
+                    <p className="text-sm text-gray-400">Applying security</p>
+                  </div>
+                </div>
+              </StitchContainer>
             </div>
           )}
 
@@ -298,7 +293,7 @@ export default function LockPdfPage() {
                   </div>
                 </div>
               </StitchContainer>
-              
+
               <button
                 onClick={() => { setFile(null); setResult(null); setPassword(''); setConfirmPassword(''); }}
                 className="w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-gray-300 font-medium transition-all border border-white/10"

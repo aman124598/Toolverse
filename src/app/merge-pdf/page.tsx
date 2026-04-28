@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer, StitchDropzone, StitchButton } from '@/components/StitchComponents';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function MergePdfPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -73,18 +74,11 @@ export default function MergePdfPage() {
       }
 
       const blob = await response.blob();
-      
+
       setProgress(90);
 
       // Download the merged PDF
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'merged.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await Mobile.saveFile(blob, 'merged.pdf');
 
       setProgress(100);
       setResult(true);
@@ -106,8 +100,8 @@ export default function MergePdfPage() {
   const totalSize = files.reduce((acc, f) => acc + f.size, 0);
 
   return (
-    <ToolLayout 
-      title="Merge PDF" 
+    <ToolLayout
+      title="Merge PDF"
       description="Combine multiple PDF files into one single document seamlessly"
       icon={Icons.merge}
       gradient="from-blue-500 to-indigo-500"
@@ -129,8 +123,8 @@ export default function MergePdfPage() {
             <span className="text-sm font-medium text-gray-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
               {files.length} files • {formatSize(totalSize)}
             </span>
-            <button 
-              onClick={() => setFiles([])} 
+            <button
+              onClick={() => setFiles([])}
               className="text-xs font-semibold text-red-400 hover:text-red-300 transition-colors"
             >
               Remove all
@@ -140,7 +134,7 @@ export default function MergePdfPage() {
           <StitchContainer noPadding>
             <div className="max-h-[350px] overflow-y-auto p-4 space-y-3 custom-scrollbar">
               {files.map((file, index) => (
-                <div 
+                <div
                   key={`${file.name}-${index}`}
                   className="flex items-center gap-4 bg-white/5 hover:bg-white/10 rounded-xl p-3 border border-white/10 group transition-colors duration-300"
                 >
@@ -194,21 +188,21 @@ export default function MergePdfPage() {
       {merging && (
         <div className="mt-6">
           <StitchContainer>
-             <div className="flex items-center gap-4 mb-4">
-               <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                 <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-               </div>
-               <div>
-                 <p className="font-medium text-white">Merging PDFs...</p>
-                 <p className="text-sm text-gray-400">{progress}% complete</p>
-               </div>
-             </div>
-             <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-               <div 
-                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500" 
-                 style={{ width: `${progress}%` }} 
-               />
-             </div>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+              <div>
+                <p className="font-medium text-white">Merging PDFs...</p>
+                <p className="text-sm text-gray-400">{progress}% complete</p>
+              </div>
+            </div>
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </StitchContainer>
         </div>
       )}
@@ -245,7 +239,7 @@ export default function MergePdfPage() {
       {/* Merge Button */}
       {files.length >= 2 && !merging && !result && (
         <div className="mt-8">
-          <StitchButton 
+          <StitchButton
             onClick={mergePdfs}
             icon={Icons.merge}
           >

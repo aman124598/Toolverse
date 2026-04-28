@@ -47,6 +47,7 @@ function ToolsContent() {
   useEffect(() => {
     const defaultCategory = searchParams.get('category');
     if (defaultCategory && Object.keys(allTools).includes(defaultCategory)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedCategory(defaultCategory);
     }
   }, [searchParams]);
@@ -56,17 +57,17 @@ function ToolsContent() {
   // Filter tools based on search
   const getFilteredTools = () => {
     let filtered = Object.entries(allTools);
-    
+
     if (selectedCategory) {
       filtered = filtered.filter(([name]) => name === selectedCategory);
     }
-    
+
     return filtered.map(([categoryName, category]) => ({
       categoryName,
       ...category,
       tools: category.tools.filter(tool => {
         const matchesSearch = tool.name.toLowerCase().includes(search.toLowerCase()) ||
-                              tool.desc.toLowerCase().includes(search.toLowerCase());
+          tool.desc.toLowerCase().includes(search.toLowerCase());
         return matchesSearch;
       })
     })).filter(cat => cat.tools.length > 0);
@@ -92,8 +93,8 @@ function ToolsContent() {
               <Link href="/" className="font-bold text-2xl tracking-tight hover:text-gray-300 transition-colors">
                 Toolverse
               </Link>
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-sm text-gray-300 hover:text-white transition-all"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,11 +156,10 @@ function ToolsContent() {
             <div className="mt-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  !selectedCategory 
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20' 
+                className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${!selectedCategory
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20'
                     : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
-                }`}
+                  }`}
               >
                 All Categories
               </button>
@@ -167,11 +167,10 @@ function ToolsContent() {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
-                    selectedCategory === cat 
-                      ? `bg-gradient-to-r ${data.gradient} text-white shadow-lg` 
+                  className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${selectedCategory === cat
+                      ? `bg-gradient-to-r ${data.gradient} text-white shadow-lg`
                       : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
-                  }`}
+                    }`}
                 >
                   <span>{data.icon}</span>
                   <span className="hidden sm:inline">{cat}</span>
@@ -231,8 +230,8 @@ function ToolsContent() {
                     {/* Tools Grid */}
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {tools.map((tool) => (
-                        <Link 
-                          key={tool.slug} 
+                        <Link
+                          key={tool.slug}
                           href={`/${tool.slug}`}
                         >
                           <SpotlightCard className="group h-full hover:border-white/20 hover:scale-[1.02]">

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import Mobile from '@/lib/mobileAdapters';
 
 type ToolStackContextType = {
   stack: string[];
@@ -21,19 +22,27 @@ export function ToolStackProvider({ children }: { children: ReactNode }) {
 
   // Load from local storage
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('toolverse_tool_stack');
-      if (saved) setStack(JSON.parse(saved));
-    } catch (e) {
-      console.error('Failed to parse tool stack from local storage', e);
-    }
-    setIsInitialized(true);
+    let active = true;
+    (async () => {
+      try {
+        const saved = await Mobile.storageGet('toolverse_tool_stack');
+        if (!active) return;
+        if (saved) setStack(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse tool stack from local storage', e);
+      } finally {
+        if (active) setIsInitialized(true);
+      }
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Save to local storage
   useEffect(() => {
     if (isInitialized) {
-      localStorage.setItem('toolverse_tool_stack', JSON.stringify(stack));
+      void Mobile.storageSet('toolverse_tool_stack', JSON.stringify(stack));
     }
   }, [stack, isInitialized]);
 

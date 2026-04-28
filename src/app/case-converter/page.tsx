@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import ToolLayout, { Icons } from '@/components/ToolLayout';
 import { StitchContainer } from '@/components/StitchComponents';
+import Mobile from '@/lib/mobileAdapters';
 
 export default function CaseConverterPage() {
   const [text, setText] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     if (text) {
-      navigator.clipboard.writeText(text);
+      await Mobile.copyText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -25,8 +26,8 @@ export default function CaseConverterPage() {
   };
 
   return (
-    <ToolLayout 
-      title="Case Converter" 
+    <ToolLayout
+      title="Case Converter"
       description="Convert text between UPPERCASE, lowercase, Title Case, and Sentence case"
       icon={Icons.text}
       gradient="from-blue-500 to-cyan-500"
@@ -45,7 +46,7 @@ export default function CaseConverterPage() {
             placeholder="Enter text to convert..."
             className="w-full h-48 px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors resize-none mb-4"
           />
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <button onClick={() => setText(text.toUpperCase())} className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white transition-all">UPPERCASE</button>
             <button onClick={() => setText(text.toLowerCase())} className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white transition-all">lowercase</button>
