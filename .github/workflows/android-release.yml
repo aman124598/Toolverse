@@ -1,0 +1,64 @@
+name: Automatic Android Build & Release
+
+on:
+  push:
+    branches:
+      - main
+      - master # Triggers on push to main or master branch
+
+jobs:
+  build_and_release:
+    name: Build & Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required for creating GitHub Releases
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17" # Android Gradle plugin typically requires Java 17
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Grant execute permissions for gradlew
+        working-directory: ./android
+        run: chmod +x gradlew
+
+      - name: Build Android APK
+        working-directory: ./android
+        # We use assembleDebug here to avoid needing to configure signing keys. 
+        # If you add signing keys later, this can be changed to assembleRelease.
+        run: ./gradlew assembleDebug
+
+      - name: Rename APK to app-release.apk
+        run: mv android/app/build/outputs/apk/debug/app-debug.apk
+          android/app/build/outputs/apk/debug/app-release.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v1.0.${{ github.run_number }}"
+          name: "Update v1.0.${{ github.run_number }}"
+          body: "Automated standard release deployed from commit ${{ github.sha }}."
+          files: android/app/build/outputs/apk/debug/app-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

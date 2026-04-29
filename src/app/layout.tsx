@@ -4,6 +4,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { ToolStackProvider } from "@/context/ToolStackContext";
 import { MyStackDrawer } from "@/components/MyStackDrawer";
+import { AppDownloadPopup } from "@/components/AppDownloadPopup";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -64,6 +65,7 @@ export default function RootLayout({
         <ToolStackProvider>
           {children}
           <MyStackDrawer />
+          <AppDownloadPopup />
         </ToolStackProvider>
         <Analytics />
       </body>
