@@ -34,6 +34,9 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
+      - name: Create fallback web directory
+        run: mkdir -p out
+
       - name: Sync Capacitor
         run: npx cap sync android
 
